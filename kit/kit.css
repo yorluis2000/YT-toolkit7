@@ -1,0 +1,109 @@
+/* kit.css — InteresTech7 Shorts design system (Kokonut UI / shadcn look: zinc surfaces, hairline borders,
+   soft depth, one or two accent colors per story). 1080×1920 canvas. Safe zones:
+   0–250 top (platform UI)  ·  250–1060 stage  ·  1085–1400 captions  ·  1400–1920 keep calm (title, buttons; right edge x>930 too) */
+:root {
+  --bg: #07070a; --z950: #09090b; --z900: #18181b; --z850: #1f1f23; --z800: #27272a; --z700: #3f3f46; --z600: #52525b;
+  --z500: #71717a; --z400: #a1a1aa; --z300: #d4d4d8; --z200: #e4e4e7; --z100: #f4f4f5;
+  --line: rgba(255, 255, 255, .09); --line2: rgba(255, 255, 255, .16);
+  --cyan: #22d3ee; --sky: #38bdf8; --blue: #3b82f6; --violet: #a78bfa; --fuchsia: #e879f9; --pink: #f472b6;
+  --rose: #fb7185; --red: #ef4444; --orange: #fb923c; --amber: #fbbf24; --yellow: #facc15; --lime: #a3e635; --emerald: #34d399;
+  --accent: var(--cyan); --accent2: var(--violet); --hot: var(--red);
+  --cap-y: #ffd43b; --cap-b: #57d3ff; --cap-r: #ff4d4d;
+  --font: 'Inter', system-ui, sans-serif; --display: 'Inter Display', 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', 'DejaVu Sans Mono', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); color: var(--z100);
+  font-family: var(--font); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+#app { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+.layer { position: absolute; inset: 0; pointer-events: none; }
+#world { position: absolute; inset: 0; }
+.scene { position: absolute; inset: 0; }
+.stage { position: absolute; left: 0; right: 0; top: 250px; height: 810px; }
+.abs { position: absolute; }
+.row { display: flex; align-items: center; } .col { display: flex; flex-direction: column; }
+.center { display: flex; align-items: center; justify-content: center; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* backgrounds + finishing layers */
+.dots { position: absolute; inset: -60px; background-image: radial-gradient(rgba(255, 255, 255, var(--dot-a, .10)) 1.7px, transparent 2.3px); background-size: 36px 36px; }
+.grid-bg { position: absolute; inset: -60px; background-image: linear-gradient(rgba(255,255,255,var(--grid-a,.05)) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,var(--grid-a,.05)) 1px, transparent 1px); background-size: 72px 72px; }
+.glow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, var(--c, var(--accent)), transparent); pointer-events: none; }
+.vignette { position: absolute; inset: 0; background: radial-gradient(130% 85% at 50% 42%, transparent 52%, rgba(0, 0, 0, .72)); pointer-events: none; }
+.grain { position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay; pointer-events: none; }   /* kit.grain(el) fills it */
+.flash { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+
+/* surfaces */
+.card { position: absolute; border-radius: 36px; background: linear-gradient(180deg, rgba(39, 39, 42, .92), rgba(24, 24, 27, .94));
+  border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .06); }
+.card.flat { position: relative; }
+.glass { background: linear-gradient(160deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .03)); border: 1px solid var(--line2);
+  backdrop-filter: blur(22px) saturate(140%); }      /* max 2 glass panels on screen: backdrop blur is the slowest thing to render */
+.gborder { border: 2px solid transparent; background: linear-gradient(var(--z900), var(--z900)) padding-box,
+  linear-gradient(135deg, var(--accent), var(--accent2)) border-box; }
+.ring-glow { box-shadow: 0 0 0 1px color-mix(in srgb, var(--c, var(--accent)) 60%, transparent), 0 0 60px color-mix(in srgb, var(--c, var(--accent)) 35%, transparent); }
+.tile { border-radius: 28px; background: var(--z900); border: 1px solid var(--line); }
+
+/* type */
+.kicker { font: 700 30px/1 var(--font); letter-spacing: .2em; text-transform: uppercase; color: var(--z400); }
+.label { font: 600 34px/1.15 var(--font); color: var(--z400); }
+.title { font: 800 64px/1.02 var(--display); letter-spacing: -.025em; color: var(--z100); }
+.h1 { font: 900 132px/.92 var(--display); letter-spacing: -.035em; }
+.mega { font: 900 230px/.85 var(--display); letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); }
+.grad-text { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.shimmer { background: linear-gradient(100deg, var(--z500) 30%, #fff 50%, var(--z500) 70%); background-size: 260% 100%;
+  background-position: var(--shine, 100%) 0; -webkit-background-clip: text; background-clip: text; color: transparent; }   /* tween --shine 100% → 0% */
+.marker { background: linear-gradient(transparent 58%, color-mix(in srgb, var(--mk-c, var(--yellow)) 80%, transparent) 58%) no-repeat;
+  background-size: var(--mk, 0%) 100%; padding: 0 .06em; }                                                                 /* tween --mk 0% → 100% */
+.glitch { position: relative; display: inline-block; }
+.glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+.glitch::before { color: #22d3ee; transform: translateX(var(--gx, 0px)); clip-path: inset(var(--g1t, 0%) 0 var(--g1b, 100%) 0); mix-blend-mode: screen; }
+.glitch::after { color: #f43f5e; transform: translateX(calc(var(--gx, 0px) * -1)); clip-path: inset(var(--g2t, 0%) 0 var(--g2b, 100%) 0); mix-blend-mode: screen; }
+.k-mask { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 .02em; }   /* kit classes use the k- prefix: never reuse it in a story */
+.k-ch, .k-wd { display: inline-block; }
+
+/* chips + status */
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 999px; background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line2); font: 650 32px/1 var(--font); color: var(--z100); white-space: nowrap; }
+.pill.hot { background: color-mix(in srgb, var(--hot) 16%, transparent); border-color: color-mix(in srgb, var(--hot) 55%, transparent); color: #fecaca; }
+.live { width: 16px; height: 16px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 7px rgba(239, 68, 68, .22); }
+.island { display: inline-flex; align-items: center; gap: 18px; padding: 20px 34px; border-radius: 999px; background: #000;
+  border: 1px solid rgba(255, 255, 255, .12); font: 700 34px/1 var(--font); box-shadow: 0 20px 60px rgba(0, 0, 0, .6); white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; justify-content: center; min-width: 54px; height: 54px; padding: 0 16px; border-radius: 16px;
+  font: 800 30px/1 var(--font); background: var(--z800); color: var(--z100); }
+.stamp { display: inline-block; padding: 18px 34px; border: 8px solid currentColor; border-radius: 18px; font: 900 96px/1 var(--display);
+  letter-spacing: .02em; text-transform: uppercase; color: var(--red); background: rgba(10, 2, 4, .55); }
+
+/* components */
+.toast { display: flex; align-items: center; gap: 26px; padding: 26px 30px; border-radius: 30px; background: rgba(24, 24, 27, .94);
+  border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(0, 0, 0, .5); }
+.toast .t1 { font: 700 38px/1.1 var(--font); color: var(--z100); } .toast .t2 { font: 500 30px/1.2 var(--font); color: var(--z400); margin-top: 6px; }
+.icon-tile { flex: none; width: 84px; height: 84px; border-radius: 24px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c, var(--accent)) 16%, transparent); color: var(--c, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--c, var(--accent)) 35%, transparent); }
+.metric { padding: 44px 48px; } .metric .lbl { font: 600 34px/1 var(--font); color: var(--z400); }
+.metric .val { font: 900 170px/.9 var(--display); letter-spacing: -.045em; font-variant-numeric: tabular-nums; margin-top: 22px; }
+.bar { height: 22px; border-radius: 999px; background: rgba(255, 255, 255, .07); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: var(--w, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.term { font: 500 34px/1.5 var(--mono); color: var(--z300); padding: 30px 38px; }
+.term .dots3 { display: flex; gap: 12px; margin-bottom: 24px; } .term .dots3 i { width: 18px; height: 18px; border-radius: 50%; background: var(--z700); }
+.term .ok { color: var(--emerald); } .term .warn { color: var(--amber); } .term .bad { color: var(--rose); } .term .dim { color: var(--z500); }
+.switch { width: 150px; height: 84px; border-radius: 999px; background: var(--z700); position: relative; }
+.switch > i { position: absolute; top: 8px; left: 8px; width: 68px; height: 68px; border-radius: 50%; background: #fff;
+  transform: translateX(calc(var(--on, 0) * 66px)); box-shadow: 0 4px 12px rgba(0, 0, 0, .4); }
+.flap { display: inline-grid; place-items: center; width: 118px; height: 160px; margin: 0 5px; border-radius: 16px; position: relative;
+  background: linear-gradient(#232327 50%, #1b1b1f 50%); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .5), 0 12px 30px rgba(0, 0, 0, .45);
+  font: 800 116px/1 var(--display); color: var(--z100); overflow: hidden; }
+.flap.gap { width: 40px; background: none; box-shadow: none; }
+.flap::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: rgba(0, 0, 0, .6); }
+.flap b { display: inline-block; font-weight: 800; }
+.ic { display: block; }
+.bento { display: grid; gap: 22px; }
+
+/* captions (Shorts style: heavy, stroked, word-pop) */
+.captions { position: absolute; left: 60px; right: 60px; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 50; pointer-events: none; }
+.cap { font: 900 100px/1.04 var(--display); letter-spacing: -.02em; color: #f4f7fb; text-transform: uppercase;
+  -webkit-text-stroke: 13px #03060b; paint-order: stroke fill; text-shadow: 0 8px 26px rgba(0, 0, 0, .6); }
+.cap .w { display: inline-block; transform-origin: 50% 75%; }
+.cap .y { color: var(--cap-y); } .cap .b { color: var(--cap-b); } .cap .r { color: var(--cap-r); }

@@ -1,0 +1,431 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>InteresTech7 — Freezer hack (v2)</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+/* ---------- shared bits for this story */
+.island-wrap { position: absolute; left: 0; right: 0; top: 278px; display: grid; place-items: center; }
+.island-wrap > * { grid-area: 1 / 1; }
+.flagchip { width: 92px; height: 64px; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,.12); flex: none; display: block; }
+.flag { display: block; width: 100%; height: 100%; }
+.f-ie { background: linear-gradient(90deg, #169b62 33.3%, #fff 33.3% 66.6%, #ff883e 66.6%); }
+.f-be { background: linear-gradient(90deg, #111 33.3%, #fae042 33.3% 66.6%, #ed2939 66.6%); }
+.f-lu { background: linear-gradient(180deg, #ed2939 33.3%, #fff 33.3% 66.6%, #00a1de 66.6%); }
+.f-se { background: linear-gradient(90deg, transparent 30%, #fecc00 30% 43%, transparent 43%), linear-gradient(180deg, transparent 40%, #fecc00 40% 60%, transparent 60%), #006aa7; }
+.f-ee { background: linear-gradient(180deg, #0072ce 33.3%, #111 33.3% 66.6%, #fff 66.6%); }
+.f-it { background: linear-gradient(90deg, #009246 33.3%, #fff 33.3% 66.6%, #ce2b37 66.6%); }
+.f-pt { background: linear-gradient(90deg, #046a38 40%, #da291c 40%); }
+.f-fr { background: linear-gradient(90deg, #002395 33.3%, #fff 33.3% 66.6%, #ed2939 66.6%); }
+.t1 { font: 750 40px/1.1 var(--font); color: var(--z100); }
+.t2 { font: 500 31px/1.25 var(--font); color: var(--z400); margin-top: 8px; }
+
+/* ---------- hook: freezer telemetry */
+#hook .tele { left: 80px; top: 392px; width: 920px; height: 636px; padding: 44px 52px; --c: #38bdf8; }
+.tele .head { display: flex; justify-content: space-between; align-items: center; }
+.tele .icons { position: relative; width: 84px; height: 84px; }
+.tele .icons > * { position: absolute; inset: 0; }
+.tele .temp { font: 900 250px/.84 var(--display); letter-spacing: -.05em; margin-top: 40px; font-variant-numeric: tabular-nums; }
+.tele .sub { font: 600 40px/1 var(--font); color: var(--z400); margin-top: 26px; font-variant-numeric: tabular-nums; }
+.tele .spark { position: absolute; left: 52px; bottom: 40px; }
+.tele .crit { position: absolute; right: 44px; top: 430px; font-size: 84px; }
+
+/* ---------- news */
+.nm { left: 80px; top: 470px; width: 920px; padding: 46px 50px; }
+.nm-row { display: flex; align-items: center; justify-content: space-between; margin-top: 34px; }
+.nm-l { font: 900 84px/1 var(--display); letter-spacing: -.03em; color: var(--z300); position: relative; display: inline-block; }
+.nm-movie::after { content: ''; position: absolute; left: -8px; top: 50%; height: 12px; width: var(--st, 0%); background: var(--red); border-radius: 8px; }
+.nm-real { color: var(--z500); transform-origin: 100% 50%; }
+.switch.big { width: 190px; height: 104px; } .switch.big > i { width: 86px; height: 86px; top: 9px; left: 9px; transform: translateX(calc(var(--on, 0) * 86px)); }
+.dt { position: absolute; left: 0; right: 0; top: 440px; display: flex; flex-direction: column; align-items: center; gap: 34px; }
+.flaps-row { display: flex; }
+.dt-sub { gap: 16px; font: 600 38px/1 var(--font); color: var(--z300); }
+
+/* ---------- countries */
+.hdr { position: absolute; left: 80px; right: 80px; top: 296px; display: flex; align-items: center; justify-content: space-between; }
+.c-grid { position: absolute; left: 80px; right: 80px; top: 396px; grid-template-columns: 1fr 1fr; grid-auto-rows: 132px; }
+.ct { display: flex; align-items: center; gap: 22px; padding: 0 26px; }
+.ct.wide { grid-column: 1 / 3; }
+.ct-mid { flex: 1; } .ct-n { font: 800 34px/1 var(--font); letter-spacing: .04em; margin-bottom: 16px; }
+.ct .bar > i { --w: 0%; background: linear-gradient(90deg, #fbbf24, #ef4444); }
+.ct-dot { --dc: #34d399; width: 18px; height: 18px; border-radius: 50%; background: var(--dc); box-shadow: 0 0 0 7px color-mix(in srgb, var(--dc) 25%, transparent); }
+.peak { position: absolute; left: 0; right: 0; top: 470px; height: 480px; }
+.peak-card { padding: 50px 80px; border-radius: 44px; text-align: center; background: linear-gradient(180deg, #2a0d0d, #160606);
+  border: 2px solid rgba(239,68,68,.6); box-shadow: 0 0 120px rgba(239,68,68,.45), 0 40px 90px rgba(0,0,0,.6); }
+.peak-v { font: 900 250px/.9 var(--display); letter-spacing: -.05em; color: #fff; margin-top: 18px; }
+.peak-s { font: 600 38px/1 var(--font); color: #fca5a5; margin-top: 18px; }
+
+/* ---------- stores */
+.sc { left: 80px; width: 920px; padding: 34px 38px; --c: #3f3f46; }
+.sc-a { top: 318px; } .sc-b { top: 686px; }
+.sc-top { display: flex; align-items: center; gap: 26px; }
+.sc-tx { flex: 1; }
+.sc-num { text-align: right; } .sc-num b { display: inline-block; font: 900 104px/.9 var(--display); letter-spacing: -.04em; }
+.sc-num small { display: block; font: 600 26px/1 var(--font); color: var(--z400); letter-spacing: .12em; text-transform: uppercase; margin-top: 6px; }
+.sc-icons { display: flex; flex-wrap: wrap; gap: 10px 9px; margin-top: 30px; color: var(--z600); }
+.si { display: block; }
+
+/* ---------- how */
+.how-q { position: absolute; left: 0; right: 0; top: 330px; height: 700px; }
+.net { position: absolute; left: 0; right: 0; top: 420px; height: 420px; }
+.nd { top: 0; width: 340px; height: 400px; padding: 36px; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
+.nd-l { left: 80px; } .nd-r { left: 660px; }
+.nd .t1 { font-size: 38px; }
+.pill.ok { color: #a7f3d0; background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.45); }
+.link { position: absolute; left: 420px; top: 170px; }
+.wifi { position: absolute; left: 486px; top: 112px; width: 108px; height: 108px; border-radius: 30px; background: var(--z900); border: 1px solid var(--line2); display: grid; place-items: center; color: var(--cyan); }
+.tm { left: 80px; top: 470px; width: 920px; min-height: 420px; }
+.tm .l { min-height: 51px; white-space: pre; }
+.tm .l4 { font-weight: 800; font-size: 46px; margin-top: 18px; color: var(--emerald); letter-spacing: .06em; }
+.swc { left: 80px; top: 420px; width: 920px; padding: 46px 50px; --c: #3f3f46; }
+.sw-row { display: flex; align-items: center; justify-content: space-between; margin-top: 40px; }
+.sw-opt { display: flex; flex-direction: column; align-items: center; gap: 14px; font: 900 56px/1 var(--display); letter-spacing: -.01em; }
+.sw-opt.cool { color: #7dd3fc; } .sw-opt.hot { color: var(--z600); }
+.swc .l5, .swc .l6 { font: 500 34px/1.5 var(--mono); color: var(--z300); white-space: pre; min-height: 51px; }
+.swc .l5 { margin-top: 40px; }
+
+/* ---------- wave */
+.w-big { position: absolute; left: 0; right: 0; top: 300px; height: 740px; }
+.w2 { font-size: 250px; line-height: .86; text-align: center; color: #fff; }
+.w2-sub { font: 700 34px/1 var(--font); letter-spacing: .2em; color: #fca5a5; text-transform: uppercase; margin-top: 30px; text-align: center; }
+.w-hdr { position: absolute; left: 80px; right: 80px; top: 300px; display: flex; align-items: center; gap: 26px; }
+.w-t { font: 800 44px/1.1 var(--display); margin-top: 8px; }
+.w-cnt { position: absolute; left: 80px; right: 80px; top: 424px; display: flex; align-items: flex-end; gap: 24px; }
+.w-n { font: 900 170px/.86 var(--display); letter-spacing: -.05em; color: #fff; display: inline-block; transform-origin: 0 80%; }
+.w-l { font: 700 40px/1.1 var(--font); color: var(--z300); padding-bottom: 14px; } .w-l small { color: var(--z500); font-size: 30px; }
+.w-grid { position: absolute; left: 172px; top: 616px; width: 735px; display: grid; grid-template-columns: repeat(35, 14px); gap: 7px; }
+.w-grid i { width: 14px; height: 14px; border-radius: 4px; background: #27272a; display: block; }
+.w-fire { position: absolute; left: 110px; right: 110px; top: 836px; border-color: rgba(251,146,60,.5); box-shadow: 0 0 80px rgba(251,146,60,.35), 0 24px 60px rgba(0,0,0,.6); }
+
+/* ---------- trash */
+.rc-wrap { position: absolute; left: 0; right: 0; top: 296px; display: flex; justify-content: center; }
+.receipt { width: 800px; padding: 50px 54px 60px; background: #f4f4f0; color: #18181b; border-radius: 10px 10px 4px 4px;
+  font: 600 39px/1.55 var(--mono); box-shadow: 0 40px 90px rgba(0,0,0,.6);
+  -webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - 18px) no-repeat, radial-gradient(14px 14px at 50% 0, transparent 60%, #000 62%) bottom / 28px 18px repeat-x; }
+.rc-h { font: 900 64px/1 var(--display); letter-spacing: .04em; text-align: center; }
+.rc-s { text-align: center; color: #52525b; font-size: 31px; margin-top: 10px; }
+.receipt hr { border: 0; border-top: 3px dashed #a1a1aa; margin: 24px 0; }
+.rc-l { display: flex; justify-content: space-between; } .rc-l span:last-child { color: #b91c1c; font-weight: 800; }
+.rc-t { font-size: 40px; font-weight: 800; } .rc-t span:last-child { color: #18181b; }
+.rc-stamp { position: absolute; top: 400px; left: 50%; margin-left: -300px; width: 600px; text-align: center; font-size: 124px; }
+
+/* ---------- era */
+.era-t { position: absolute; left: 80px; right: 80px; top: 300px; text-align: center; transform-origin: 50% 0; }
+.era-h { font-size: 116px; margin-top: 18px; } .era-h2 { font-size: 96px; margin-top: 8px; --accent: #fb7185; --accent2: #fb923c; }
+.era-c { top: 610px; width: 440px; height: 410px; padding: 40px; }
+.era-a { left: 80px; } .era-b { left: 560px; --c: #ef4444; }
+.era-c .t1 { margin-top: 30px; font-size: 44px; } .era-c .pill { position: absolute; left: 40px; bottom: 40px; }
+.era-c .x { position: absolute; inset: 30px; width: calc(100% - 60px); height: calc(100% - 60px); }
+.era-c .x path { fill: none; stroke: #ef4444; stroke-width: 7; stroke-linecap: round; }
+.ib { display: grid; grid-template-columns: repeat(4, 76px); gap: 12px; color: #fca5a5; }
+.ib > span { width: 76px; height: 76px; border-radius: 20px; display: grid; place-items: center; background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.4); }
+
+/* ---------- targets */
+.tg-row { position: absolute; left: 80px; right: 80px; top: 460px; display: flex; gap: 20px; }
+.tg { position: relative; flex: 1; height: 360px; padding-top: 50px; display: flex; flex-direction: column; align-items: center; gap: 24px; --c: #3f3f46; }
+.tg-ic { color: var(--z200); } .tg-n { font: 900 46px/1 var(--display); letter-spacing: .01em; }
+.tg-st { position: relative; height: 40px; width: 220px; font: 800 30px/40px var(--font); text-align: center; }
+.tg-st span { position: absolute; inset: 0; } .s-on { color: #34d399; } .s-tg { color: #f87171; }
+.ret { position: absolute; left: 50%; top: 10px; width: 190px; height: 190px; margin-left: -95px; color: #ef4444; }
+.scan { position: absolute; left: 80px; right: 80px; top: 460px; height: 10px; border-radius: 10px; background: linear-gradient(90deg, transparent, #ef4444, transparent); box-shadow: 0 0 40px #ef4444; }
+
+/* ---------- loop: empty aisle */
+.aisle { position: absolute; left: 80px; right: 80px; top: 296px; }
+.ai-k { text-align: center; }
+.doors { display: flex; gap: 18px; margin-top: 34px; }
+.door { position: relative; flex: 1; height: 600px; border-radius: 26px; overflow: hidden; border: 2px solid rgba(186,230,253,.25);
+  background: linear-gradient(170deg, rgba(186,230,253,.10), rgba(14,165,233,.04) 60%, rgba(255,255,255,.06)); box-shadow: inset 0 0 60px rgba(56,189,248,.12); }
+.door .sh { position: absolute; left: 18px; right: 18px; height: 6px; border-radius: 4px; background: rgba(186,230,253,.28); }
+.door .sh:nth-child(1) { top: 130px; } .door .sh:nth-child(2) { top: 260px; } .door .sh:nth-child(3) { top: 390px; } .door .sh:nth-child(4) { top: 520px; }
+.door .hd { position: absolute; right: 18px; top: 220px; width: 12px; height: 160px; border-radius: 8px; background: rgba(226,232,240,.55); }
+.door .light { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(125,211,252,.35), transparent 45%); }
+.ai-p { position: absolute; left: 50%; top: 360px; margin-left: -150px; width: 300px; justify-content: center; font: 900 52px/1 var(--display); padding: 22px 30px;
+  background: rgba(10,10,12,.85); border-color: rgba(248,113,113,.6); color: #fecaca; }
+</style></head>
+<body>
+<div id="app">
+  <div id="bg" class="layer"><div class="dots" id="dots"></div></div>
+  <div id="world"></div>
+  <div id="fx" class="layer"><div class="flash"></div><div class="vignette"></div><div class="grain" id="grain"></div></div>
+</div>
+<script src="kit/motion.js"></script>  <!-- to run on real GSAP, add <script src="gsap.min.js"></script> before this line -->
+<script src="kit/kit.js"></script>
+<script>
+const K = kit, T = 52;
+const CUES = [
+  [0.00, 1.40, 'HACKERS JUST CRANKED'], [1.40, 2.80, 'SUPERMARKET FREEZERS…'], [2.80, 5.00, 'TO !122°F'],
+  [5.00, 6.30, '*NOT *A *MOVIE.'], [6.30, 9.00, 'THIS HAPPENED ACROSS EUROPE ON *NOVEMBER *2ND'],
+  [9.00, 10.20, 'OVERNIGHT, FREEZERS IN'], [10.20, 12.40, 'AT LEAST *SEVEN *COUNTRIES STARTED HEATING UP'], [12.40, 15.00, 'SOME HIT !50°C'],
+  [15.00, 16.30, 'IN IRELAND, SUPERVALU'], [16.30, 18.30, 'PULLED FROZEN FOOD FROM *13 *STORES'], [18.30, 21.00, 'IN BELGIUM, CARREFOUR GOT HIT AT *15'],
+  [21.00, 22.00, '~HOW?'], [22.00, 23.60, 'THE COOLING SYSTEMS WERE ~ONLINE'], [23.60, 25.40, 'ATTACKERS GOT REMOTE ACCESS…'],
+  [25.40, 28.00, 'AND FLIPPED THEM INTO !DEFROST !MODE'], [28.00, 29.70, 'AND IT’S THE *SECOND *WAVE'],
+  [29.70, 31.40, 'IN OCTOBER, A SIMILAR ATTACK IN FRANCE'], [31.40, 33.40, 'HIT AROUND *700 SUPERMARKETS'], [33.40, 36.00, 'AND SOME STORES EVEN !CAUGHT !FIRE'],
+  [36.00, 37.40, 'TONS OF FOOD…'], [37.40, 39.00, 'STRAIGHT IN THE !TRASH'], [39.00, 40.90, 'THIS IS THE NEW ERA OF HACKING'],
+  [40.90, 42.70, 'NOT STEALING YOUR DATA…'], [42.70, 45.00, 'ATTACKING THE *PHYSICAL *WORLD'], [45.00, 46.70, 'FRIDGES, FREEZERS, FACTORIES.'],
+  [46.70, 49.00, 'IF IT’S ONLINE, IT’S A !TARGET'], [49.00, 50.60, 'SO THE NEXT TIME THE FREEZER AISLE'], [50.60, 52.00, 'IS EMPTY, REMEMBER—'],
+];
+const CUTS = [5, 9, 15, 21, 28, 36, 39, 45];
+const IMPACTS = [[4.10, .35], [5.15, .55], [12.40, .45], [16.30, .25], [20.30, .25], [24.90, .25], [26.60, .45], [28.15, .90], [31.40, .30],
+  [33.60, .50], [37.40, .40], [42.70, .55], [46.90, .45]];
+const FLASHES = [[4.10, .30, '#ff6a1f', .20], [5.15, .18, '#ffffff', .15], [12.40, .30, '#ff3b3b', .25], [26.60, .30, '#ff3b3b', .25],
+  [28.15, .40, '#ffffff', .60], [33.60, .35, '#ff6a1f', .30], [42.70, .30, '#ff3b3b', .30], [46.90, .25, '#ff3b3b', .25],
+  ...CUTS.map(s => [s, .12, '#ffffff', .12])];
+const HEAT = [[0, '#7dd3fc'], [.45, '#f4f4f5'], [.75, '#fb923c'], [1, '#ef4444']];
+const $ = (s, r) => r.querySelector(s), $$ = (s, r) => r.querySelectorAll(s);
+
+K.start({ T, fps: 30 }, () => {
+  K.grain('#grain', { opacity: .07 });
+  K.bgDots('#dots', { gap: 36, drift: 1, alpha: .075 });
+  const glows = K.bgGlows('#bg', [{ x: 230, y: 560, r: 560, c: '#0ea5e9', ax: 70, ay: 40, k: 1, a: .5 }, { x: 880, y: 1240, r: 600, c: '#6366f1', ax: 80, ay: 60, k: 2, a: .42 }]);
+  const hook = { v: 0 };
+  const heat = t => (t < 5 ? hook.v / 122 : 0);
+  K.bgParticles('#bg', { n: 70, color: '#e0f2fe', size: [2, 5], m: 1, dir: 1, alpha: .55, seed: 4,
+    show: t => (t < 5 ? 1 - K.clamp(heat(t) * 1.6) : t >= 49 ? K.prog(t, 49, 50) : 0) });
+  K.bgParticles('#bg', { n: 46, color: '#fb923c', size: [2, 5], m: 2, dir: -1, alpha: .7, seed: 9, wobble: 26,
+    show: t => (t < 5 ? K.clamp((heat(t) - .55) * 2.5) : t >= 33.4 && t < 36 ? K.prog(t, 33.4, 34) : 0) });
+  K.bgPaths('#bg', { n: 16, color: '251,113,133', alpha: .09, show: t => (t >= 39 && t < 45 ? Math.min(K.prog(t, 39, 39.6), 1 - K.prog(t, 44.6, 45)) : 0) });
+  // background glow colours follow the story: cold → hot → tech → fire → cold again (matches frame 0 for the loop)
+  const GK = [[5, '#ef4444', '#9f1239'], [9, '#f97316', '#b91c1c'], [15, '#f59e0b', '#dc2626'], [21, '#06b6d4', '#7c3aed'], [26.6, '#ef4444', '#7c3aed'],
+    [28, '#ef4444', '#f97316'], [36, '#d97706', '#92400e'], [39, '#7c3aed', '#be123c'], [45, '#dc2626', '#7f1d1d'], [49, '#0ea5e9', '#6366f1']];
+  K.frame(t => {
+    let a, b;
+    if (t < 5) { const h = heat(t); a = K.mix('#0ea5e9', '#f97316', h); b = K.mix('#6366f1', '#ef4444', h); }
+    else {
+      let i = GK.length - 1; while (GK[i][0] > t) i--;
+      const prev = i === 0 ? [0, '#f97316', '#ef4444'] : GK[i - 1], p = K.prog(t, GK[i][0], GK[i][0] + .5);
+      a = K.mix(prev[1], GK[i][1], p); b = K.mix(prev[2], GK[i][2], p);
+    }
+    glows[0].style.setProperty('--c', a); glows[1].style.setProperty('--c', b);
+  });
+
+  // ================================================================ HOOK 0–5 — kit.hookScene also shows its first frame under the loop's last 0.65 s
+  const { el: hk } = K.hookScene('hook', 5, (tl, el) => {
+    el.innerHTML = `    <div class="island-wrap"><div class="island i-ok"><span class="live" style="background:#34d399;box-shadow:0 0 0 7px rgba(52,211,153,.22)"></span>FREEZER 07 · ONLINE</div>
+      <div class="island i-bad"><span class="live"></span>ALERT · TEMP CRITICAL</div></div>
+    <div class="card glass ring-glow tele">
+      <div class="head"><div class="kicker">Cold storage · Aisle 4</div>
+        <div class="icons"><div class="ic-snow" style="color:#7dd3fc">${K.icon('snowflake', { size: 84, sw: 1.8 })}</div><div class="ic-flame" style="color:#fb923c">${K.icon('flame', { size: 84, sw: 1.8 })}</div></div></div>
+      <div class="temp">0°F</div><div class="sub">−18°C · safe at or below 0°F</div>
+      <svg class="spark" width="816" height="150" viewBox="0 0 816 150">
+        <defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset=".55" stop-color="#fbbf24"/><stop offset="1" stop-color="#ef4444"/></linearGradient>
+        <linearGradient id="ha" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity=".35"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></linearGradient></defs>
+        <path class="area" fill="url(#ha)"/><path class="line" fill="none" stroke="url(#hg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="stamp crit">CRITICAL</div>
+    </div>`;
+    {
+      const pts = [];
+      for (let x = 0; x <= 816; x += 12) pts.push([x, 140 - 128 * Math.pow(x / 816, 2.4) + Math.sin(x * .09) * 3 * (1 - x / 816)]);
+      const d = 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L');
+      $('.line', el).setAttribute('d', d);
+      $('.area', el).setAttribute('d', d + ' L816 150 L0 150 Z');
+    }
+    tl.to(hook, { v: 122, duration: 3.6, ease: 'power2.in' }, .3)
+      .fromTo($('.line', el), { drawSVG: '0% 1%' }, { drawSVG: '0% 100%', duration: 3.6, ease: 'power2.in' }, .3)
+      .fromTo($('.area', el), { clipPath: 'inset(0% 99% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 3.6, ease: 'power2.in' }, .3)
+      .to($('.ic-snow', el), { autoAlpha: 0, rotation: 120, scale: .4, duration: .35, ease: 'power2.in' }, 2.0)
+      .fromTo($('.ic-flame', el), { autoAlpha: 0, scale: .3 }, { autoAlpha: 1, scale: 1, duration: .5, ease: 'back.out(2.5)' }, 2.2)
+      .to($('.i-ok', el), { autoAlpha: 0, y: -26, duration: .28, ease: 'power2.in' }, 2.8)
+      .fromTo($('.i-bad', el), { autoAlpha: 0, y: 26, scale: .9 }, { autoAlpha: 1, y: 0, scale: 1, duration: .45, ease: 'back.out(2)' }, 2.9)
+      .fromTo($('.crit', el), { autoAlpha: 0, scale: 2.3, rotation: -18 }, { autoAlpha: 1, scale: 1, rotation: -9, duration: .32, ease: 'expo.out' }, 4.1)
+      .fromTo($('.tele', el), { scale: 1.035 }, { scale: 1, duration: .45, ease: 'back.out(3)', immediateRender: false }, 4.1);
+  });
+  const tempEl = $('.temp', hk), subEl = $('.sub', hk), tele = $('.tele', hk);
+  K.frame(t => {
+    const v = hook.v, h = v / 122, c = Math.round((v - 32) * 5 / 9);
+    const s = Math.round(v) + '°F';
+    if (tempEl.textContent !== s) tempEl.textContent = s;
+    tempEl.style.color = K.ramp(HEAT, h);
+    subEl.textContent = (c < 0 ? '−' + -c : c) + '°C · safe at or below 0°F';
+    tele.style.setProperty('--c', K.ramp([[0, '#38bdf8'], [.6, '#fb923c'], [1, '#ef4444']], h));
+  });
+
+  // ================================================================ NEWS 5–9
+  K.scene('news', 5, 9, (tl, el) => {
+    el.innerHTML = `<div class="island-wrap"><div class="island n-isl"><span class="live"></span>BREAKING · REAL INCIDENT</div></div>
+      <div class="card nm"><div class="kicker">What you're watching</div>
+        <div class="nm-row"><span class="nm-l nm-movie">MOVIE</span><div class="switch big nm-sw"><i></i></div><span class="nm-l nm-real">REAL</span></div></div>
+      <div class="dt"><div class="kicker">Europe · overnight</div><div class="flaps-row"></div>
+        <div class="dt-sub row">${K.icon('calendar', { size: 44 })}<span>Supermarket freezers · remote attack</span></div></div>`;
+    tl.fromTo($('.n-isl', el), { y: -150, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .55, ease: 'back.out(1.6)' }, 0)
+      .fromTo($('.nm', el), { scale: .86, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .4, ease: 'expo.out' }, .05)
+      .to($('.nm-sw', el), { '--on': 1, backgroundColor: '#ef4444', duration: .35, ease: 'back.out(1.6)' }, .38)
+      .to($('.nm-movie', el), { '--st': '108%', color: '#52525b', duration: .3, ease: 'power2.out' }, .42)
+      .to($('.nm-real', el), { color: '#ffffff', scale: 1.14, duration: .32, ease: 'back.out(2.2)' }, .46)
+      .to($('.nm', el), { y: -90, autoAlpha: 0, duration: .3, ease: 'power2.in' }, 1.22)
+      .fromTo($('.dt', el), { y: 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, 1.32);
+    K.flaps($('.flaps-row', el), 'NOV 02', 6.35, 7.5);
+  });
+
+  // ================================================================ COUNTRIES 9–15
+  const COUNTRIES = [['IRELAND', 'ie'], ['BELGIUM', 'be'], ['LUXEMBOURG', 'lu'], ['SWEDEN', 'se'], ['ESTONIA', 'ee'], ['ITALY', 'it'], ['PORTUGAL', 'pt']];
+  K.scene('countries', 9, 15, (tl, el) => {
+    el.innerHTML = `<div class="hdr"><span class="kicker">Overnight · freezer alarms</span><span class="pill"><b class="c-n tnum" style="font-size:40px">0</b>&nbsp;countries</span></div>
+      <div class="bento c-grid">${COUNTRIES.map(([n, f], i) => `<div class="tile ct${i === 6 ? ' wide' : ''}"><span class="flagchip"><i class="flag f-${f}"></i></span>
+        <div class="ct-mid"><div class="ct-n">${n}</div><div class="bar"><i></i></div></div><span class="ct-dot"></span></div>`).join('')}</div>
+      <div class="peak center"><div class="peak-card"><div class="kicker" style="color:#fca5a5">Hottest freezers reported</div><div class="peak-v">50°C</div><div class="peak-s">122°F, inside a freezer</div></div></div>`;
+    const tiles = $$('.ct', el), cnt = { v: 0 };
+    tl.fromTo($('.hdr', el), { y: -30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .4, ease: 'power3.out' }, 0)
+      .fromTo(tiles, { y: 60, autoAlpha: 0, scale: .94 }, { y: 0, autoAlpha: 1, scale: 1, duration: .5, ease: 'expo.out', stagger: .16 }, .25)
+      .to(cnt, { v: 7, duration: 1.12, ease: 'steps(7)' }, .09)
+      .to($$('.ct .bar > i', el), { '--w': '100%', duration: 1.7, ease: 'power2.inOut', stagger: .1 }, 1.2)
+      .to(tiles, { borderColor: 'rgba(251,146,60,.55)', duration: .5, stagger: .1 }, 1.5)
+      .to($$('.ct-dot', el), { '--dc': '#fb923c', duration: .3, stagger: .1 }, 1.5)
+      .to(tiles, { autoAlpha: .22, scale: .97, duration: .3, ease: 'power2.out' }, 3.4)
+      .fromTo($('.peak-card', el), { scale: 1.9, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .38, ease: 'back.out(1.7)' }, 3.4);
+    K.text($('.c-n', el), () => Math.round(cnt.v));
+  });
+
+  // ================================================================ STORES 15–21
+  const icons = n => Array.from({ length: n }, () => `<span class="si">${K.icon('store', { size: n > 13 ? 47 : 54, sw: 2 })}</span>`).join('');
+  K.scene('stores', 15, 21, (tl, el) => {
+    el.innerHTML = `<div class="card sc sc-a ring-glow"><div class="sc-top"><span class="flagchip"><i class="flag f-ie"></i></span>
+        <div class="sc-tx"><div class="t1">SuperValu · Ireland</div><div class="t2">Frozen food pulled from shelves</div></div>
+        <div class="sc-num tnum"><b class="na">0</b><small>stores</small></div></div><div class="sc-icons">${icons(13)}</div></div>
+      <div class="card sc sc-b ring-glow"><div class="sc-top"><span class="flagchip"><i class="flag f-be"></i></span>
+        <div class="sc-tx"><div class="t1">Carrefour · Belgium</div><div class="t2">Stores hit by the attack</div></div>
+        <div class="sc-num tnum"><b class="nb">0</b><small>stores</small></div></div><div class="sc-icons">${icons(15)}</div></div>`;
+    const A = $('.sc-a', el), B = $('.sc-b', el), ca = { v: 0 }, cb = { v: 0 };
+    tl.fromTo(A, { x: -240, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .55, ease: 'expo.out' }, 0)
+      .fromTo($$('.si', A), { scale: .78 }, { scale: 1, color: '#f87171', duration: .2, ease: 'back.out(3)', stagger: 1.6 / 13 }, 1.4)
+      .to(ca, { v: 13, duration: 1.6, ease: 'steps(13)' }, 1.4 - 1.6 / 13)
+      .fromTo($('.na', A), { scale: 1.35 }, { scale: 1, duration: .35, ease: 'back.out(3)', immediateRender: false }, 3.05)
+      .to(A, { '--c': '#ef4444', duration: .3 }, 3.05)
+      .fromTo(B, { x: 240, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .55, ease: 'expo.out' }, 3.3)
+      .fromTo($$('.si', B), { scale: .78 }, { scale: 1, color: '#f87171', duration: .2, ease: 'back.out(3)', stagger: 1.4 / 15 }, 4.1)
+      .to(cb, { v: 15, duration: 1.4, ease: 'steps(15)' }, 4.1 - 1.4 / 15)
+      .fromTo($('.nb', B), { scale: 1.35 }, { scale: 1, duration: .35, ease: 'back.out(3)', immediateRender: false }, 5.5)
+      .to(B, { '--c': '#ef4444', duration: .3 }, 5.5);
+    K.text($('.na', A), () => Math.round(ca.v));
+    K.text($('.nb', B), () => Math.round(cb.v));
+  });
+
+  // ================================================================ HOW 21–28
+  K.scene('how', 21, 28, (tl, el) => {
+    el.innerHTML = `<div class="how-q center"><div class="mega grad-text hq" style="--accent:#57d3ff;--accent2:#a78bfa">HOW?</div></div>
+      <div class="net"><div class="card nd nd-l"><div class="icon-tile" style="--c:#38bdf8">${K.icon('fridge', { size: 46 })}</div><div class="t1">Cooling controller</div><div class="pill ok"><span class="live" style="background:#34d399;box-shadow:0 0 0 6px rgba(52,211,153,.2)"></span>ONLINE</div></div>
+        <svg class="link" width="240" height="20" viewBox="0 0 240 20"><path class="ln" d="M0 10 H240" stroke="#38bdf8" stroke-width="5" stroke-dasharray="1 0" fill="none" stroke-linecap="round"/></svg>
+        <div class="wifi">${K.icon('wifi', { size: 56 })}</div>
+        <div class="card nd nd-r"><div class="icon-tile" style="--c:#a78bfa">${K.icon('globe', { size: 46 })}</div><div class="t1">The internet</div><div class="pill">Reachable</div></div></div>
+      <div class="card term tm"><div class="dots3"><i></i><i></i><i></i></div><div class="l l1"></div><div class="l l2 dim"></div><div class="l l4"></div></div>
+      <div class="card swc ring-glow"><div class="kicker">Cooling mode</div>
+        <div class="sw-row"><div class="sw-opt cool">${K.icon('snowflake', { size: 96, sw: 1.8 })}<span>COOL</span></div><div class="switch big sw"><i></i></div>
+          <div class="sw-opt hot">${K.icon('flame', { size: 96, sw: 1.8 })}<span>DEFROST</span></div></div>
+        <div class="l5"></div><div class="l6 dim"></div></div>`;
+    const net = $('.net', el), tm = $('.tm', el), swc = $('.swc', el);
+    tl.fromTo($('.hq', el), { scale: .4, autoAlpha: 0, rotation: -8 }, { scale: 1, autoAlpha: 1, rotation: 0, duration: .42, ease: 'back.out(2)' }, 0)
+      .to($('.hq', el), { scale: 1.5, autoAlpha: 0, duration: .22, ease: 'power2.in' }, .8)
+      .fromTo($('.nd-l', el), { x: -140, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, 1.0)
+      .fromTo($('.nd-r', el), { x: 140, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, 1.05)
+      .fromTo($('.ln', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .4, ease: 'power2.inOut' }, 1.15)
+      .fromTo($('.wifi', el), { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .4, ease: 'back.out(2.4)' }, 1.3)
+      .to(net, { y: -150, scale: .6, autoAlpha: 0, duration: .4, ease: 'power3.in' }, 2.45)
+      .fromTo(tm, { y: 160, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 2.55)
+      .to($('.l1', el), { text: '$ scan --internet cooling-controllers', duration: .49, ease: 'none' }, 2.6)
+      .to($('.l2', el), { text: '› controller found · remote login', duration: .25, ease: 'none' }, 3.3)
+      .to($('.l4', el), { scrambleText: { text: 'ACCESS GRANTED', chars: 'upperCase' }, duration: .45, ease: 'none' }, 3.92)
+      .fromTo($('.l4', el), { scale: 1.12 }, { scale: 1, duration: .3, ease: 'back.out(3)', immediateRender: false }, 4.37)
+      .to(tm, { y: -140, autoAlpha: 0, duration: .32, ease: 'power2.in' }, 4.3)
+      .fromTo(swc, { y: 150, autoAlpha: 0, scale: .96 }, { y: 0, autoAlpha: 1, scale: 1, duration: .45, ease: 'expo.out' }, 4.42)
+      .to($('.l5', el), { text: '$ set mode DEFROST', duration: .27, ease: 'none' }, 4.8)
+      .to($('.sw', el), { '--on': 1, backgroundColor: '#ef4444', duration: .3, ease: 'back.out(1.7)' }, 5.6)
+      .to($('.cool', el), { autoAlpha: .3, scale: .92, duration: .3 }, 5.6)
+      .to($('.hot', el), { color: '#fb923c', scale: 1.12, duration: .35, ease: 'back.out(2.4)' }, 5.6)
+      .to(swc, { '--c': '#ef4444', duration: .3 }, 5.6)
+      .to($('.l6', el), { text: '› confirm: yes', duration: .22, ease: 'none' }, 5.8);
+    $('.l4', el).style.transformOrigin = '0 50%';
+    K.frame(t => { if (t >= 26.7 && t < 28) swc.style.borderColor = Math.floor((t - 26.7) * 5) % 2 ? 'rgba(239,68,68,.9)' : 'rgba(239,68,68,.25)'; });
+  });
+
+  // ================================================================ WAVE 28–36
+  K.scene('wave', 28, 36, (tl, el) => {
+    el.innerHTML = `<div class="w-big center col"><div class="mega w2 glitch">2ND<br>WAVE</div><div class="w2-sub">Same playbook, again</div></div>
+      <div class="w-hdr"><span class="flagchip"><i class="flag f-fr"></i></span><div><div class="kicker">October · France</div><div class="w-t">A similar attack, bigger scale</div></div></div>
+      <div class="w-cnt"><span class="w-n tnum">0</span><span class="w-l">supermarkets<br><small>around</small></span></div>
+      <div class="w-grid">${'<i></i>'.repeat(700)}</div>
+      <div class="toast w-fire"><div class="icon-tile" style="--c:#fb923c">${K.icon('flame', { size: 48 })}</div><div><div class="t1">Fires reported</div><div class="t2">Some stores even caught fire</div></div></div>`;
+    const w2 = $('.w2', el), dots = $$('.w-grid i', el), cw = { v: 0 };
+    w2.dataset.text = '2ND WAVE';
+    tl.fromTo(w2, { scale: 1.9, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .45, ease: 'expo.out' }, .15)
+      .fromTo($('.w2-sub', el), { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .4, ease: 'power3.out' }, .45)
+      .to($('.w-big', el), { autoAlpha: 0, scale: .9, duration: .3, ease: 'power2.in' }, 1.55)
+      .fromTo($('.w-hdr', el), { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 1.7)
+      .fromTo($('.w-cnt', el), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 1.78)
+      .fromTo($('.w-grid', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .3 }, 1.8)
+      .fromTo(dots, { scale: .5 }, { scale: 1, backgroundColor: '#ef4444', duration: .25, ease: 'power2.out', stagger: { amount: 1.5, from: 'random' } }, 1.9)
+      .to(cw, { v: 700, duration: 1.5, ease: 'power1.inOut' }, 1.9)
+      .fromTo($('.w-n', el), { scale: 1.3 }, { scale: 1, duration: .4, ease: 'back.out(3)', immediateRender: false }, 3.4)
+      .fromTo($('.w-fire', el), { y: 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'back.out(1.5)' }, 5.45)
+      .to(dots, { backgroundColor: '#fb923c', duration: .3, stagger: { amount: .8, from: 'center', grid: [20, 35] } }, 5.55);
+    K.text($('.w-n', el), () => K.num(Math.round(cw.v)));
+    K.glitch(w2, [[28.15, 28.55], [29.0, 29.18]], 18);
+  });
+
+  // ================================================================ TRASH 36–39
+  K.scene('trash', 36, 39, (tl, el) => {
+    el.innerHTML = `<div class="rc-wrap"><div class="receipt"><div class="rc-h">LOSS REPORT</div><div class="rc-s">Frozen aisle · overnight</div><hr>
+      ${['Frozen veg', 'Ice cream', 'Ready meals', 'Seafood', 'Pizza'].map(n => `<div class="rc-l"><span>${n}</span><span>DISCARDED</span></div>`).join('')}
+      <hr><div class="rc-l rc-t"><span>TOTAL</span><span>TONS</span></div></div>
+      <div class="stamp rc-stamp">WASTED</div></div>`;
+    tl.fromTo($('.receipt', el), { clipPath: 'inset(0% 0% 100% 0%)', y: -30 }, { clipPath: 'inset(0% 0% 0% 0%)', y: 0, duration: 1.25, ease: 'steps(10)' }, .05)
+      .fromTo($$('.rc-l', el), { autoAlpha: 0, x: -24 }, { autoAlpha: 1, x: 0, duration: .2, ease: 'power2.out', stagger: .22 }, .35)
+      .fromTo($('.rc-stamp', el), { autoAlpha: 0, scale: 2.5, rotation: -26 }, { autoAlpha: 1, scale: 1, rotation: -12, duration: .3, ease: 'expo.out' }, 1.4);
+  });
+
+  // ================================================================ ERA 39–45
+  K.scene('era', 39, 45, (tl, el) => {
+    el.innerHTML = `<div class="era-t"><div class="kicker">This is</div><div class="h1 era-h">THE NEW ERA</div><div class="h1 era-h2 grad-text">OF HACKING</div></div>
+      <div class="card era-c era-a"><div class="icon-tile" style="--c:#a1a1aa">${K.icon('database', { size: 46 })}</div><div class="t1">Stealing data</div><div class="t2">passwords · cards · emails</div>
+        <svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none"><path class="x1" d="M10 10 L90 90"/><path class="x2" d="M90 10 L10 90"/></svg><div class="pill era-old">OLD SCHOOL</div></div>
+      <div class="card era-c era-b ring-glow"><div class="ib">${['factory', 'fridge', 'power', 'zap'].map(n => `<span>${K.icon(n, { size: 40 })}</span>`).join('')}</div>
+        <div class="t1">Physical world</div><div class="t2">machines · cold chains · power</div><div class="pill hot">RIGHT NOW</div></div>`;
+    const chars = K.split($('.era-h', el), 'chars', { mask: true });
+    tl.fromTo($('.era-t .kicker', el), { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: .4, ease: 'power3.out' }, 0)
+      .fromTo(chars, { yPercent: 110 }, { yPercent: 0, duration: .6, ease: 'expo.out', stagger: .03 }, .05)
+      .fromTo($('.era-h2', el), { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, .4)
+      .to($('.era-t', el), { y: -20, scale: .74, duration: .45, ease: 'power3.inOut' }, 1.85)
+      .fromTo($('.era-a', el), { x: -160, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, 1.95)
+      .fromTo($('.era-a .x1', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .22, ease: 'power2.out' }, 2.6)
+      .fromTo($('.era-a .x2', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .22, ease: 'power2.out' }, 2.72)
+      .to($('.era-a', el), { autoAlpha: .5, scale: .97, duration: .3 }, 2.95)
+      .fromTo($('.era-old', el), { autoAlpha: 0, scale: .7 }, { autoAlpha: 1, scale: 1, duration: .3, ease: 'back.out(2)' }, 2.95)
+      .fromTo($('.era-b', el), { x: 220, scale: 1.15, autoAlpha: 0 }, { x: 0, scale: 1, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 3.7)
+      .fromTo($$('.ib > span', el), { scale: 0 }, { scale: 1, duration: .35, ease: 'back.out(2.5)', stagger: .06 }, 3.85);
+  });
+
+  // ================================================================ TARGETS 45–49
+  K.scene('targets', 45, 49, (tl, el) => {
+    el.innerHTML = `<div class="tg-row">${[['fridge', 'FRIDGES'], ['snowflake', 'FREEZERS'], ['factory', 'FACTORIES']].map(([ic, n]) =>
+      `<div class="card tg ring-glow"><div class="tg-ic">${K.icon(ic, { size: 110, sw: 1.6 })}</div><div class="tg-n">${n}</div>
+        <div class="tg-st"><span class="s-on">● ONLINE</span><span class="s-tg">● TARGET</span></div><div class="ret">${K.icon('crosshair', { size: 190, sw: 1.2 })}</div></div>`).join('')}</div>
+      <div class="scan"></div>`;
+    const tg = $$('.tg', el);
+    tl.fromTo(tg, { y: 70, autoAlpha: 0, scale: .9 }, { y: 0, autoAlpha: 1, scale: 1, duration: .45, ease: 'back.out(1.6)', stagger: .5 }, .1)
+      .fromTo($$('.s-tg', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .2, stagger: .12 }, 1.9)
+      .to($$('.s-on', el), { autoAlpha: 0, duration: .2, stagger: .12 }, 1.9)
+      .fromTo($$('.ret', el), { autoAlpha: 0, scale: 1.8, rotation: -90 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .38, ease: 'expo.out', stagger: .12 }, 1.85)
+      .to($$('.ret', el), { rotation: 45, duration: 2, ease: 'none' }, 2.3)
+      .to(tg, { '--c': '#ef4444', duration: .3, stagger: .12 }, 1.9)
+      .fromTo($('.scan', el), { y: 0, autoAlpha: 0 }, { y: 360, autoAlpha: 1, duration: .7, ease: 'power1.inOut' }, 1.85)
+      .to($('.scan', el), { autoAlpha: 0, duration: .2 }, 2.55);
+  });
+
+  // ================================================================ LOOP 49–52 (fades into the hook's first frame)
+  K.scene('loop', 49, 52, (tl, el) => {
+    el.innerHTML = `<div class="aisle"><div class="kicker ai-k">Aisle 4 · Frozen</div>
+      <div class="doors">${[0, 1, 2].map(() => '<div class="door"><i class="sh"></i><i class="sh"></i><i class="sh"></i><i class="sh"></i><b class="hd"></b><span class="light"></span></div>').join('')}</div>
+      <div class="pill ai-p">EMPTY</div></div>`;
+    tl.fromTo($$('.door', el), { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .5, ease: 'expo.out', stagger: .08 }, 0)
+      .fromTo($('.ai-k', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .4 }, .1)
+      .fromTo($('.ai-p', el), { autoAlpha: 0, scale: 1.6 }, { autoAlpha: 1, scale: 1, duration: .35, ease: 'back.out(2)' }, 1.6)
+      .to($$('.door', el), { x: i => [-24, 0, 24][i], skewX: -5, duration: .11, ease: 'power2.in', yoyo: true, repeat: 1 }, 1.68);
+    const lights = $$('.light', el);
+    K.frame(t => {
+      if (t < 49 || t >= 52) return;
+      lights.forEach((l, i) => { const f = Math.floor(t * 30); l.style.opacity = t < 50.7 && K.hash(f, i + 1) > .72 ? .15 : 1; });
+    });
+  }, { fadeOut: [51.35, 51.85] });
+
+  K.captions(CUES);
+  K.camera('#world', { impacts: IMPACTS, kicks: CUTS, pushes: [[0.7, 5.0, 0.05]] });
+  K.flashes('#fx .flash', FLASHES);
+});
+</script>
+</body></html>
