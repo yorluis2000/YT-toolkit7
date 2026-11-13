@@ -22,11 +22,11 @@ voiceover text, do just that step.
 The kit is a GSAP-compatible motion engine, Kokonut-style components, a Chrome frame recorder, an audio synth and a
 mastering script. It lives on GitHub with a worked example:
 ```bash
-git clone --depth 1 https://github.com/yorluis2000/yt-toolkit7.git ~/its7-kit
+git clone --depth 1 https://github.com/yorluis2000/YT-toolkit7.git ~/its7-kit
 mkdir -p ~/shorts/<slug> && cp -r ~/its7-kit/kit ~/shorts/<slug>/kit && cd ~/shorts/<slug>
 cat ~/its7-kit/examples/freezer/index.html     # read it once: copy its structure, not its story
 ```
-- Clone refused? Attach the repo with the add_repo tool (owner `yorluis2000`, repo `yt-toolkit7`) and retry.
+- Clone refused? Attach the repo with the add_repo tool (owner `yorluis2000`, repo `YT-toolkit7`) and retry.
 - Backup copy: the "Youtube Shorts" project docs `claude/shorts-kit/kit_bundle.txt` and `claude/shorts-kit/example_freezer.txt`.
   Each file sits after a `### FILE: <name>` line. If `project_read` returns a local path, unpack with
   `python3 -c "import re,sys,pathlib as P;s=P.Path(sys.argv[1]).read_text();[(P.Path('kit')/n).write_text(b) for n,b in re.findall(r'^### FILE: (\S+)\n(.*?)(?=^### FILE: |\Z)',s,re.S|re.M)]" <path>`
