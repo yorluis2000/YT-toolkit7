@@ -1,0 +1,329 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>InteresTech7 — Drone update hack (30 s)</title>
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+.island-wrap { position: absolute; left: 0; right: 0; top: 278px; display: grid; place-items: center; }
+.island-wrap > * { grid-area: 1 / 1; }
+.live.ok { background: #34d399; box-shadow: 0 0 0 7px rgba(52,211,153,.22); }
+.pill.ok { color: #a7f3d0; background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.45); }
+.flagchip { width: 84px; height: 56px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,.12); flex: none; display: block; }
+.f-de { background: linear-gradient(180deg, #111 33.3%, #dd0000 33.3% 66.6%, #ffce00 66.6%); }
+.t1 { font: 750 40px/1.1 var(--font); color: var(--z100); }
+.t2 { font: 500 31px/1.25 var(--font); color: var(--z400); margin-top: 8px; }
+
+/* hook: recon drone flight card */
+.hk-card { left: 80px; top: 392px; width: 920px; height: 646px; padding: 40px 46px; --c: #22d3ee; overflow: hidden; }
+.hk-head { display: flex; align-items: center; gap: 22px; position: relative; z-index: 2; }
+.hk-head .kicker { flex: 1; }
+.hk-pills { position: relative; width: 250px; height: 66px; }
+.hk-pills > * { position: absolute; right: 0; top: 0; }
+.hk-radar { position: absolute; left: 50%; top: 360px; width: 720px; height: 720px; margin: -360px 0 0 -360px; border-radius: 50%; }
+.hk-radar i { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.07); }
+.hk-sweep { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(34,211,238,.32), rgba(34,211,238,0) 70deg, transparent 360deg); }
+.hk-drone { position: absolute; left: 50%; top: 360px; width: 560px; height: 360px; margin: -180px 0 0 -280px; }
+.hk-foot { position: absolute; left: 46px; right: 46px; bottom: 36px; display: flex; justify-content: space-between; font: 700 30px/1 var(--font); letter-spacing: .14em; color: var(--z400); z-index: 2; }
+.hk-link { position: relative; width: 260px; height: 30px; text-align: right; }
+.hk-link > span { position: absolute; right: 0; top: 0; }
+.hk-stamp-w { position: absolute; left: 0; right: 0; top: 300px; display: flex; justify-content: center; z-index: 3; }
+.hk-stamp { font-size: 108px; }
+.drone-svg .body { stroke: #e4e4e7; stroke-width: 2.6; stroke-linejoin: round; }
+.drone-svg .rotor { fill: rgba(255,255,255,.04); stroke: rgba(228,228,231,.55); stroke-width: 2; }
+.drone-svg .blade { stroke: #f4f4f5; stroke-width: 4; stroke-linecap: round; }
+
+/* one update */
+.one-wrap { position: absolute; left: 0; right: 0; top: 280px; height: 780px; display: flex; flex-direction: column; align-items: center; }
+.one-n { font-size: 470px; line-height: .86; color: #fff; text-shadow: 0 0 80px rgba(34,211,238,.35); }
+.one-l { font: 900 96px/1 var(--display); letter-spacing: .06em; margin-top: -6px; }
+.upd { position: absolute; left: 80px; width: 920px; top: 806px; padding: 30px 34px; display: flex; align-items: center; gap: 26px; --bc: #22d3ee; }
+.upd .bar { margin-top: 18px; } .upd .bar > i { background: var(--bc); }
+.upd-tx { flex: 1; }
+
+/* breach */
+.qs { left: 80px; top: 362px; width: 920px; padding: 40px 44px; --c: #3f3f46; }
+.qs-top { display: flex; align-items: center; gap: 26px; }
+.qs-name { font: 900 70px/1 var(--display); letter-spacing: -.02em; }
+.qs-row { display: flex; gap: 22px; margin-top: 34px; }
+.qs-m { flex: 1; padding: 26px 30px; border-radius: 26px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.qs-val { font: 900 150px/.9 var(--display); letter-spacing: -.05em; margin-top: 12px; font-variant-numeric: tabular-nums; }
+.qs-val2 { font: 850 54px/1.05 var(--display); margin-top: 18px; }
+.qs-stamp { position: absolute; right: 70px; top: -66px; font-size: 62px; padding: 10px 24px; border-width: 7px; }
+.qs-toast { position: absolute; left: 80px; right: 80px; top: 872px; border-color: rgba(239,68,68,.45); }
+
+/* malware in the update */
+.pk { left: 230px; top: 330px; width: 620px; height: 640px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; --c: #22d3ee; }
+.pk-ic { color: #e4e4e7; }
+.pk-name { font: 900 64px/1 var(--display); }
+.pk-st { display: grid; place-items: center; width: 560px; height: 70px; }
+.pk-st > * { grid-area: 1 / 1; }
+.pk-bad { color: #fecaca; font: 900 44px/64px var(--mono); letter-spacing: .06em; text-align: center; }
+.bug { position: absolute; left: 430px; top: 520px; width: 220px; height: 220px; color: #ef4444; filter: drop-shadow(0 0 30px rgba(239,68,68,.7)); }
+
+/* reach: network */
+.nw-node { left: 140px; width: 800px; padding: 28px 34px; display: flex; align-items: center; gap: 24px; }
+.nw-upd { top: 300px; } .nw-army { top: 548px; --c: #3f3f46; } .nw-drn { top: 796px; --c: #3f3f46; }
+.nw-node .t1 { flex: 1; white-space: nowrap; }
+.nw-ics { display: flex; gap: 12px; color: var(--z300); }
+.nw-lines { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; pointer-events: none; }
+.nw-lines path { fill: none; stroke-width: 8; stroke-linecap: round; }
+.nw-pill { position: relative; width: 300px; height: 64px; }
+.nw-pill > * { position: absolute; right: 0; top: 0; }
+.nw-block { position: absolute; left: 486px; top: 694px; width: 108px; height: 108px; border-radius: 30px; display: grid; place-items: center; background: #052e1c; border: 2px solid rgba(52,211,153,.6); color: #34d399; box-shadow: 0 0 50px rgba(52,211,153,.4); }
+
+/* grounded fleet + exercise */
+.fl-hdr { position: absolute; left: 80px; right: 80px; top: 296px; display: flex; justify-content: space-between; align-items: center; }
+.fl-grid { position: absolute; left: 80px; right: 80px; top: 376px; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 200px; }
+.fl-t { position: relative; display: grid; place-items: center; color: var(--z200); --dc: #34d399; }
+.fl-t .dot { position: absolute; right: 22px; top: 22px; width: 18px; height: 18px; border-radius: 50%; background: var(--dc); box-shadow: 0 0 0 7px color-mix(in srgb, var(--dc) 25%, transparent); }
+.fl-t .gr { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font: 900 30px/1 var(--display); letter-spacing: .12em; color: #f87171; }
+.ex { left: 80px; top: 470px; width: 920px; padding: 40px 44px; --c: #ef4444; }
+.ex-row { display: flex; align-items: center; gap: 24px; margin-top: 30px; padding: 26px 28px; border-radius: 24px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.ex-row .t1 { flex: 1; }
+.ex-stamp { font-size: 54px; padding: 10px 22px; border-width: 6px; }
+
+/* flying again */
+.ag { position: absolute; left: 0; right: 0; top: 300px; height: 740px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+.ag-ic { color: #34d399; filter: drop-shadow(0 0 40px rgba(52,211,153,.55)); }
+.ag-t { font: 900 140px/.9 var(--display); letter-spacing: -.035em; color: #ecfdf5; text-align: center; }
+
+/* fan-out */
+.fo-src { left: 290px; top: 300px; width: 500px; padding: 26px 30px; display: flex; align-items: center; gap: 22px; --c: #ef4444; }
+.fo-lines { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; pointer-events: none; }
+.fo-lines path { fill: none; stroke: #ef4444; stroke-width: 4; stroke-linecap: round; opacity: .85; }
+.fo-n { position: absolute; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 30px; display: grid; place-items: center; background: var(--z900); border: 1px solid var(--line2); color: var(--z300); }
+.fo-lbl { position: absolute; left: 0; right: 0; top: 968px; text-align: center; }
+
+/* loop: phone update prompt */
+.ph { position: absolute; left: 300px; top: 292px; width: 480px; height: 780px; border-radius: 70px; background: #050507; border: 10px solid #26262b;
+  box-shadow: 0 50px 120px rgba(0,0,0,.7), inset 0 0 0 2px rgba(255,255,255,.06); overflow: hidden; }
+.ph-scr { position: absolute; inset: 0; background: radial-gradient(120% 70% at 30% 10%, #1e3a8a 0%, #0b1020 55%, #050507 100%); }
+.ph-isl { position: absolute; left: 50%; top: 18px; width: 150px; height: 40px; margin-left: -75px; border-radius: 22px; background: #000; }
+.ph-time { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font: 300 120px/1 var(--display); color: rgba(255,255,255,.92); letter-spacing: -.02em; }
+.ph-date { position: absolute; left: 0; right: 0; top: 96px; text-align: center; font: 600 26px/1 var(--font); color: rgba(255,255,255,.7); }
+.ph-note { position: absolute; left: 20px; right: 20px; top: 300px; padding: 22px 22px 20px; border-radius: 30px; background: rgba(40,40,46,.86); border: 1px solid rgba(255,255,255,.12); }
+.ph-note .row { gap: 16px; }
+.ph-app { width: 58px; height: 58px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(160deg, #3b82f6, #1d4ed8); color: #fff; flex: none; }
+.ph-h { font: 750 28px/1.1 var(--font); color: #fff; } .ph-s { font: 500 23px/1.25 var(--font); color: rgba(255,255,255,.72); margin-top: 4px; }
+.ph-btns { display: flex; gap: 12px; margin-top: 18px; }
+.ph-btns span { flex: 1; text-align: center; padding: 14px 0; border-radius: 16px; font: 700 26px/1 var(--font); background: rgba(255,255,255,.1); color: #fff; }
+.ph-btns .go { background: #2563eb; --g: 0; box-shadow: 0 0 calc(var(--g) * 40px) rgba(59,130,246,calc(var(--g) * .9)); }
+</style></head>
+<body>
+<div id="app">
+  <div id="bg" class="layer"><div class="dots" id="dots"></div></div>
+  <div id="world"></div>
+  <div id="fx" class="layer"><div class="flash"></div><div class="vignette"></div><div class="grain" id="grain"></div></div>
+</div>
+<script src="kit/motion.js"></script>  <!-- to run on real GSAP, add <script src="gsap.min.js"></script> before this line -->
+<script src="kit/kit.js"></script>
+<script src="cues.js"></script>
+<script>
+const K = kit, T = 30;
+const CUES = window.CUES;                                  // from cues.js (python3 cues.py, timed to the voice)
+const CUTS = [3.35, 5.30, 9.30, 12.50, 15.90, 20.65, 22.10, 25.70];
+const IMPACTS = [[1.30, .55], [3.95, .30], [6.55, .40], [10.60, .35], [11.50, .30], [14.70, .20], [16.70, .45], [18.75, .35], [24.75, .55]];
+const FLASHES = [[1.30, .30, '#ff3b3b', .22], [6.55, .25, '#ff3b3b', .18], [10.60, .20, '#ff3b3b', .14], [11.50, .25, '#ff3b3b', .18], [16.70, .25, '#ff3b3b', .18],
+  [20.70, .30, '#34d399', .18], [24.75, .35, '#ff3b3b', .30], ...CUTS.map(s => [s, .12, '#ffffff', .12])];
+const $ = (s, r) => r.querySelector(s), $$ = (s, r) => r.querySelectorAll(s);
+const DRONE = (w = 560, id = 'dg') => `<svg class="drone-svg" width="${w}" height="${w * 9 / 14}" viewBox="0 0 280 180">
+  <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f3f46"/><stop offset="1" stop-color="#18181b"/></linearGradient></defs>
+  <g class="rotors">${[[80, 44], [80, 122], [200, 44], [200, 122]].map(([x, y]) => `<g transform="translate(${x} ${y})"><circle class="rotor" r="25"/><g class="bl"><line class="blade" x1="-22" y1="0" x2="22" y2="0"/></g><circle r="4" fill="#e4e4e7"/></g>`).join('')}</g>
+  <g fill="url(#${id})"><rect class="body" x="76" y="44" width="8" height="78" rx="4"/><rect class="body" x="196" y="44" width="8" height="78" rx="4"/>
+  <rect class="body" x="12" y="75" width="256" height="17" rx="8.5"/>
+  <path class="body" d="M140 18 C151 18 155 40 155 70 L152 148 C150 160 130 160 128 148 L125 70 C125 40 129 18 140 18 Z"/></g>
+  <path d="M140 150 L110 170 M140 150 L170 170" stroke="#e4e4e7" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <circle cx="140" cy="34" r="6" fill="#22d3ee"/></svg>`;
+
+K.start({ T, fps: 30 }, () => {
+  K.grain('#grain', { opacity: .07 });
+  K.bgDots('#dots', { gap: 36, drift: 1, alpha: .07 });
+  const glows = K.bgGlows('#bg', [{ x: 220, y: 560, r: 560, c: '#0ea5e9', ax: 70, ay: 40, k: 1, a: .5 }, { x: 880, y: 1240, r: 600, c: '#6366f1', ax: 80, ay: 60, k: 2, a: .42 }]);
+  K.bgParticles('#bg', { n: 50, color: '#a5f3fc', size: [1.5, 3.5], m: 1, dir: -1, alpha: .35, seed: 6, wobble: 14 });
+  const ht = t => (t >= T - 0.65 ? t - T : t);                  // hook-local time (negative in the loop tail)
+  const g = t => (t < 3.35 || t >= T - 0.65 ? K.prog(ht(t), 1.3, 1.8) : 1);   // hook "grounded" amount
+  const GK = [[3.35, '#ef4444', '#7f1d1d'], [5.3, '#f97316', '#be123c'], [9.3, '#ef4444', '#7c3aed'], [12.5, '#06b6d4', '#ef4444'],
+    [15.9, '#ef4444', '#991b1b'], [20.65, '#10b981', '#0ea5e9'], [22.1, '#ef4444', '#7c3aed'], [25.7, '#0ea5e9', '#6366f1']];
+  K.frame(t => {
+    let a, b;
+    if (t < 3.35 || t >= T - 0.65) { const h = g(t); a = K.mix('#0ea5e9', '#ef4444', h); b = K.mix('#6366f1', '#7f1d1d', h); }
+    else {
+      let i = GK.length - 1; while (GK[i][0] > t) i--;
+      const prev = i === 0 ? [0, '#ef4444', '#7f1d1d'] : GK[i - 1], p = K.prog(t, GK[i][0], GK[i][0] + .5);
+      a = K.mix(prev[1], GK[i][1], p); b = K.mix(prev[2], GK[i][2], p);
+    }
+    glows[0].style.setProperty('--c', a); glows[1].style.setProperty('--c', b);
+  });
+
+  // ============================================================ HOOK 0–3.35 (also the loop target)
+  const { el: hk } = K.hookScene('hook', 3.35, (tl, el) => {
+    el.innerHTML = `<div class="island-wrap"><div class="island h-ok"><span class="live ok"></span>BUNDESWEHR · FLIGHT OPS</div>
+      <div class="island h-ban"><span class="live"></span>FLIGHT BAN ACTIVE</div></div>
+      <div class="card glass ring-glow hk-card">
+        <div class="hk-radar"><i style="inset:0"></i><i style="inset:120px"></i><i style="inset:240px"></i><div class="hk-sweep"></div></div>
+        <div class="hk-head"><span class="flagchip f-de"></span><div class="kicker">Falke · recon</div>
+          <div class="hk-pills"><span class="pill ok p-air"><span class="live ok"></span>AIRBORNE</span><span class="pill hot p-gnd"><span class="live"></span>GROUNDED</span></div></div>
+        <div class="hk-drone">${DRONE(560, 'dg1')}</div>
+        <div class="hk-foot"><span>DATA LINK</span><span class="hk-link"><span class="lk-on" style="color:#34d399">● ONLINE</span><span class="lk-off" style="color:#f87171">● HOLD</span></span></div>
+        <div class="hk-stamp-w"><div class="stamp hk-stamp">GROUNDED</div></div>
+      </div>`;
+    tl.to($('.h-ok', el), { autoAlpha: 0, y: -24, duration: .25, ease: 'power2.in' }, 1.18)
+      .fromTo($('.h-ban', el), { autoAlpha: 0, y: 24, scale: .9 }, { autoAlpha: 1, y: 0, scale: 1, duration: .4, ease: 'back.out(2)' }, 1.28)
+      .to($('.p-air', el), { autoAlpha: 0, duration: .15 }, 1.3)
+      .fromTo($('.p-gnd', el), { autoAlpha: 0, scale: .8 }, { autoAlpha: 1, scale: 1, duration: .3, ease: 'back.out(2.5)' }, 1.3)
+      .to($('.lk-on', el), { autoAlpha: 0, duration: .15 }, 1.4)
+      .fromTo($('.lk-off', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .2 }, 1.4)
+      .fromTo($('.hk-stamp', el), { autoAlpha: 0, scale: 2.4, rotation: -22 }, { autoAlpha: 1, scale: 1, rotation: -10, duration: .3, ease: 'expo.out' }, 1.3)
+      .fromTo($('.hk-card', el), { scale: 1.035 }, { scale: 1, duration: .45, ease: 'back.out(3)', immediateRender: false }, 1.3)
+      .to($('.hk-card', el), { '--c': '#ef4444', duration: .3 }, 1.3);
+  });
+  {
+    const dr = $('.hk-drone', hk), blades = $$('.bl', hk), sweep = $('.hk-sweep', hk), io = K.ease('power2.inOut');
+    K.frame(t => {
+      if (!(t < 3.35 || t >= T - 0.65)) return;
+      const h = ht(t), gnd = g(t), d = io(gnd);
+      dr.style.transform = `translateY(${(Math.sin(2 * Math.PI * h / 1.6) * 8 * (1 - d) + 34 * d).toFixed(2)}px) scale(${(1 - .1 * d).toFixed(4)})`;
+      dr.style.opacity = (1 - .45 * d).toFixed(3);
+      const spin = 360 * 7 * (h < 1.3 ? h : 1.3 + (1 - Math.exp(-(h - 1.3) / .25)) * .25);
+      blades.forEach((b, i) => b.setAttribute('transform', `rotate(${((spin + i * 37) % 360).toFixed(1)})`));
+      sweep.style.transform = `rotate(${(h * 180).toFixed(1)}deg)`;
+      sweep.style.opacity = (1 - .8 * d).toFixed(3);
+    });
+  }
+
+  // ============================================================ ONE UPDATE 3.35–5.30
+  K.scene('one', 3.35, 5.30, (tl, el) => {
+    el.innerHTML = `<div class="one-wrap"><div class="one-n">1</div><div class="one-l">UPDATE</div></div>
+      <div class="card upd"><div class="icon-tile" style="--c:#22d3ee">${K.icon('download', { size: 46 })}</div>
+        <div class="upd-tx"><div class="t1 upd-t">QBase update</div><div class="t2">Mission-planning software</div><div class="bar"><i></i></div></div></div>`;
+    tl.fromTo($('.upd', el), { y: 160, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, .08)
+      .fromTo($('.one-l', el), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .4, ease: 'expo.out' }, .3)
+      .fromTo($('.one-n', el), { scale: 2.3, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .38, ease: 'back.out(1.6)' }, .6)
+      .fromTo($('.upd .bar > i', el), { '--w': '0%' }, { '--w': '100%', duration: 1.3, ease: 'power1.inOut' }, .25)
+      .to($('.upd', el), { '--bc': '#ef4444', duration: .2 }, 1.5);
+    K.glitch($('.upd-t', el), [[4.85, 5.30]], 12);
+    $('.upd-t', el).classList.add('glitch');
+  });
+
+  // ============================================================ BREACH 5.30–9.30
+  K.scene('breach', 5.30, 9.30, (tl, el) => {
+    el.innerHTML = `<div class="card qs ring-glow"><div class="qs-top"><div class="icon-tile" style="--c:#fb923c">${K.icon('factory', { size: 46 })}</div>
+        <div><div class="qs-name">Quantum Systems</div><div class="t2">Drone maker · Munich, Germany</div></div></div>
+        <div class="qs-row"><div class="qs-m"><div class="label">VALUATION</div><div class="qs-val">€<span class="qs-n">0</span>B</div></div>
+          <div class="qs-m"><div class="label">BUILDS</div><div class="qs-val2">Recon drones for the army</div></div></div>
+        <div class="stamp qs-stamp">BREACHED</div></div>
+      <div class="toast qs-toast"><div class="icon-tile" style="--c:#ef4444">${K.icon('alert', { size: 44 })}</div>
+        <div><div class="t1">Detected end of October</div><div class="t2">Company: “active cyberattack by hostile actors”</div></div></div>`;
+    const v = { n: 0 };
+    tl.fromTo($('.qs', el), { x: -220, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: .5, ease: 'expo.out' }, .05)
+      .fromTo($('.qs-stamp', el), { autoAlpha: 0, scale: 2.4, rotation: 18 }, { autoAlpha: 1, scale: 1, rotation: 8, duration: .3, ease: 'expo.out' }, 1.25)
+      .to($('.qs', el), { '--c': '#ef4444', duration: .3 }, 1.25)
+      .fromTo($('.qs-val', el), { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'expo.out' }, 2.1)
+      .to(v, { n: 7, duration: .8, ease: 'power2.out' }, 2.15)
+      .fromTo($('.qs-toast', el), { y: 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'back.out(1.5)' }, 3.0);
+    K.text($('.qs-n', el), () => Math.round(v.n));
+    const nm = $('.qs-name', el); nm.classList.add('glitch'); K.glitch(nm, [[6.55, 6.85]], 14);
+  });
+
+  // ============================================================ MALWARE IN THE UPDATE 9.30–12.50
+  K.scene('malware', 9.30, 12.50, (tl, el) => {
+    el.innerHTML = `<div class="card pk ring-glow"><div class="pk-ic">${K.icon('package', { size: 210, sw: 1.4 })}</div><div class="pk-name">QBase update</div>
+        <div class="pk-st"><span class="pill ok pk-ok">${K.icon('check', { size: 32, sw: 3 })}Looks routine</span><div class="pk-bad">MALWARE INSIDE</div></div></div>
+      <div class="bug">${K.icon('bug', { size: 220, sw: 1.6 })}</div>`;
+    tl.fromTo($('.pk', el), { scale: .85, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .4, ease: 'back.out(1.6)' }, .05)
+      .fromTo($('.bug', el), { x: -620, y: 120, rotation: -40, autoAlpha: 0 }, { x: -60, y: 40, rotation: 10, autoAlpha: 1, duration: .55, ease: 'power3.out' }, .3)
+      .to($('.bug', el), { x: 0, y: -20, scale: .2, autoAlpha: 0, duration: .35, ease: 'power2.in' }, .95)
+      .fromTo($('.pk', el), { scale: 1.06 }, { scale: 1, duration: .4, ease: 'back.out(3)', immediateRender: false }, 1.3)
+      .to($('.pk-ic', el), { color: '#fca5a5', duration: .2 }, 1.3)
+      .to($('.pk-ok', el), { autoAlpha: 0, duration: .15 }, 2.2)
+      .fromTo($('.pk-bad', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .1 }, 2.2)
+      .to($('.pk-bad', el), { scrambleText: { text: 'MALWARE INSIDE', chars: 'upperCase' }, duration: .45, ease: 'none' }, 2.2)
+      .to($('.pk', el), { '--c': '#ef4444', duration: .25 }, 2.2);
+    $('.pk-bad', el).textContent = '';
+    const nm = $('.pk-name', el); nm.classList.add('glitch'); K.glitch(nm, [[10.6, 10.75], [11.55, 11.9]], 12);
+  });
+
+  // ============================================================ REACH 12.50–15.90
+  K.scene('reach', 12.50, 15.90, (tl, el) => {
+    const sv = K.icon('server', { size: 50 }), dn = K.icon('drone', { size: 50 });
+    el.innerHTML = `<svg class="nw-lines" viewBox="0 0 1080 1080"><path class="p1" d="M540 420 L540 556" stroke="#ef4444"/><path class="p2" d="M540 668 L540 804" stroke="#71717a" stroke-dasharray="14 16"/></svg>
+      <div class="card nw-node nw-upd"><div class="icon-tile" style="--c:#ef4444">${K.icon('download', { size: 44 })}</div><div class="t1">Poisoned update</div></div>
+      <div class="card nw-node nw-army ring-glow"><div class="nw-ics a-ics">${sv + sv}</div><div class="t1">Army servers</div>
+        <div class="nw-pill"><span class="pill hot a-p">REACHED</span></div></div>
+      <div class="card nw-node nw-drn ring-glow"><div class="nw-ics d-ics">${dn + dn}</div><div class="t1">Drones</div>
+        <div class="nw-pill"><span class="pill ok d-p">${K.icon('check', { size: 30, sw: 3 })}NOT REACHED</span></div></div>
+      <div class="nw-block">${K.icon('shield', { size: 60 })}</div>`;
+    tl.fromTo($$('.nw-node', el), { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .4, ease: 'expo.out', stagger: .1 }, .05)
+      .fromTo($('.p1', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .7, ease: 'power2.inOut' }, .5)
+      .to($('.a-ics', el), { color: '#f87171', duration: .25 }, 1.35)
+      .to($('.nw-army', el), { '--c': '#ef4444', duration: .25 }, 1.35)
+      .fromTo($('.a-p', el), { autoAlpha: 0, scale: .7 }, { autoAlpha: 1, scale: 1, duration: .3, ease: 'back.out(2.5)' }, 1.4)
+      .fromTo($('.p2', el), { autoAlpha: 0 }, { autoAlpha: 1, duration: .2 }, 1.8)
+      .fromTo($('.nw-block', el), { autoAlpha: 0, scale: 1.8 }, { autoAlpha: 1, scale: 1, duration: .3, ease: 'back.out(2)' }, 2.15)
+      .to($('.nw-drn', el), { '--c': '#34d399', duration: .25 }, 2.2)
+      .to($('.d-ics', el), { color: '#6ee7b7', duration: .25 }, 2.2)
+      .fromTo($('.d-p', el), { autoAlpha: 0, scale: .7 }, { autoAlpha: 1, scale: 1, duration: .3, ease: 'back.out(2.5)' }, 2.25);
+  });
+
+  // ============================================================ GROUNDED + EXERCISE 15.90–20.65
+  K.scene('grounded', 15.90, 20.65, (tl, el) => {
+    el.innerHTML = `<div class="fl-hdr"><span class="kicker">Fleet status · Germany</span><span class="pill hot">FLIGHT BAN</span></div>
+      <div class="bento fl-grid">${Array.from({ length: 9 }, () => `<div class="tile fl-t">${K.icon('drone', { size: 110, sw: 1.5 })}<span class="dot"></span><div class="gr">GROUNDED</div></div>`).join('')}</div>
+      <div class="card ex ring-glow"><div class="row" style="gap:24px"><div class="icon-tile" style="--c:#fb923c">${K.icon('calendar', { size: 46 })}</div>
+          <div><div class="kicker">Recent</div><div class="t1" style="font-size:52px;font-weight:900;margin-top:10px">Military exercise</div></div></div>
+        <div class="ex-row"><div class="icon-tile" style="--c:#a1a1aa">${K.icon('drone', { size: 46 })}</div><div class="t1">Falke drones</div><div class="stamp ex-stamp">SAT OUT</div></div></div>`;
+    const tiles = $$('.fl-t', el);
+    tl.fromTo($('.fl-hdr', el), { y: -30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .35, ease: 'power3.out' }, 0)
+      .fromTo(tiles, { scale: .8, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .35, ease: 'back.out(1.7)', stagger: { amount: .3, from: 'center', grid: [3, 3] } }, .05)
+      .to($$('.fl-t .dot', el), { '--dc': '#ef4444', duration: .15, stagger: { amount: .55, from: 'random' } }, .75)
+      .fromTo($$('.fl-t .gr', el), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: .2, stagger: { amount: .55, from: 'random' } }, .75)
+      .to(tiles, { color: '#71717a', borderColor: 'rgba(239,68,68,.45)', duration: .2, stagger: { amount: .55, from: 'random' } }, .75)
+      .to($('.fl-grid', el), { autoAlpha: .18, scale: .96, duration: .3 }, 2.05)
+      .fromTo($('.ex', el), { y: 140, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 2.05)
+      .fromTo($('.ex-stamp', el), { autoAlpha: 0, scale: 2.2, rotation: -18 }, { autoAlpha: 1, scale: 1, rotation: -6, duration: .3, ease: 'expo.out' }, 2.85);
+  });
+
+  // ============================================================ FLYING AGAIN 20.65–22.10
+  K.scene('again', 20.65, 22.10, (tl, el) => {
+    el.innerHTML = `<div class="ag"><div class="island"><span class="live ok"></span>CLEARED · FLYING AGAIN</div>
+      <div class="ag-ic">${DRONE(520, 'dg2')}</div><div class="ag-t">Back in<br>the air</div></div>`;
+    tl.fromTo($('.island', el), { y: -60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .4, ease: 'back.out(1.8)' }, 0)
+      .fromTo($('.ag-ic', el), { y: 90, scale: .85, autoAlpha: 0 }, { y: 0, scale: 1, autoAlpha: 1, duration: .6, ease: 'expo.out' }, .05)
+      .fromTo($('.ag-t', el), { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, .25);
+    const bl = $$('.bl', el);
+    K.frame(t => { if (t >= 20.6 && t < 22.1) bl.forEach((b, i) => b.setAttribute('transform', `rotate(${((t * 2520 + i * 37) % 360).toFixed(1)})`)); });
+  });
+
+  // ============================================================ FAN-OUT 22.10–25.70
+  K.scene('fanout', 22.10, 25.70, (tl, el) => {
+    const N = [];
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) N.push([220 + c * 160, 690 + r * 160]);
+    el.innerHTML = `<svg class="fo-lines" viewBox="0 0 1080 1080">${N.slice(0, 5).map(([x, y]) => `<path class="c1" d="M540 432 C540 ${(432 + y) / 2} ${x} ${(432 + y) / 2 - 40} ${x} ${y - 56}"/>`).join('')}${N.slice(5).map(([x, y]) => `<path class="c2" d="M${x} ${y - 104} L${x} ${y - 56}"/>`).join('')}</svg>
+      <div class="card fo-src ring-glow"><div class="icon-tile" style="--c:#ef4444">${K.icon('package', { size: 46 })}</div><div><div class="kicker" style="color:#fca5a5">1 poisoned</div><div class="t1" style="font-size:46px;font-weight:900">Update</div></div></div>
+      ${N.map(([x, y], i) => `<div class="fo-n" style="left:${x}px;top:${y}px">${K.icon(i % 3 === 0 ? 'server' : i % 3 === 1 ? 'drone' : 'user', { size: 52 })}</div>`).join('')}
+      <div class="fo-lbl"><span class="pill hot" style="font-size:36px;padding:20px 34px">SUPPLY-CHAIN ATTACK</span></div>`;
+    tl.fromTo($('.fo-src', el), { y: -80, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: 'expo.out' }, 0)
+      .fromTo($$('.fo-n', el), { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: .3, ease: 'back.out(2)', stagger: { amount: .5, from: 'center' } }, .2)
+      .fromTo($$('.fo-lines .c1', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .6, ease: 'power2.inOut', stagger: .04 }, 1.3)
+      .fromTo($$('.fo-lines .c2', el), { drawSVG: '0%' }, { drawSVG: '100%', duration: .3, ease: 'power2.out', stagger: .04 }, 1.95)
+      .to($$('.fo-n', el), { color: '#fecaca', backgroundColor: '#3b0d0d', borderColor: 'rgba(239,68,68,.7)', duration: .15 }, 2.65)
+      .fromTo($$('.fo-n', el), { scale: 1.18 }, { scale: 1, duration: .35, ease: 'back.out(3)', immediateRender: false }, 2.65)
+      .fromTo($('.fo-lbl', el), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .35, ease: 'back.out(1.6)' }, 2.7);
+  });
+
+  // ============================================================ LOOP 25.70–30 (phone update prompt → fades into the hook)
+  K.scene('loop', 25.70, 30, (tl, el) => {
+    el.innerHTML = `<div class="ph"><div class="ph-scr"></div><div class="ph-isl"></div><div class="ph-date">Friday, November 13</div><div class="ph-time">9:41</div>
+      <div class="ph-note"><div class="row"><div class="ph-app">${K.icon('download', { size: 34, sw: 2.4 })}</div><div><div class="ph-h">Software Update</div>
+        <div class="ph-s">A new update is ready. Install now?</div></div></div><div class="ph-btns"><span>Later</span><span class="go">Install</span></div></div></div>`;
+    tl.fromTo($('.ph', el), { y: 120, autoAlpha: 0, scale: .94 }, { y: 0, autoAlpha: 1, scale: 1, duration: .5, ease: 'expo.out' }, 0)
+      .fromTo($('.ph-note', el), { y: -260, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .5, ease: 'back.out(1.4)' }, 1.15)
+      .fromTo($('.go', el), { '--g': 0 }, { '--g': 1, duration: .45, ease: 'sine.inOut', repeat: 3, yoyo: true }, 1.7);
+    const scr = $('.ph-scr', el);
+    K.frame(t => { if (t >= 25.7 && t < 30) scr.style.filter = t > 28.9 && t < 29.2 && K.hash(Math.floor(t * 30), 3) > .4 ? 'hue-rotate(160deg) saturate(2)' : ''; });
+  }, { fadeOut: [T - 0.65, T - 0.15] });
+
+  K.captions(CUES);
+  K.camera('#world', { impacts: IMPACTS, kicks: CUTS, pushes: [[0.2, 3.35, 0.04]] });
+  K.flashes('#fx .flash', FLASHES);
+});
+</script>
+</body></html>

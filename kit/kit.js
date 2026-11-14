@@ -104,7 +104,8 @@
   };
 
   // ------------------------------------------------------------------ captions (word-pop, Shorts style)
-  // cues: [[start, end, "WORDS WITH *YELLOW ~BLUE !RED MARKERS"], ...]. First word is on screen at frame 0.
+  // cues: [[start, end, "WORDS WITH *YELLOW ~BLUE !RED MARKERS", speakSeconds?], ...]. First word is on screen at frame 0.
+  // With a voiceover, pass speakSeconds (from kit voice timings) so words pop in step with the voice.
   K.captions = (cues, { top = 1085, height = 315, maxW = 960, size = 100, lines = 3 } = {}) => {
     const box = K.mount('#app', `<div class="captions" style="top:${top}px;height:${height}px"></div>`);
     const CL = { '*': 'y', '~': 'b', '!': 'r' };
@@ -123,7 +124,8 @@
       while ((nlines() > lines || div.scrollWidth > maxW) && fs > 56) { fs = Math.floor(fs * 0.92); div.style.fontSize = fs + 'px'; }
       div.style.display = 'none';
       const nchar = words.reduce((a, o) => a + o.w.length + 1, 0);
-      const speak = Math.min(0.8 * (s1 - s0), 0.30 * words.length + 0.08);
+      const spk = cues[ci][3];                       // optional 4th value: seconds the voice takes to say this cue
+      const speak = spk != null ? spk : Math.min(0.8 * (s1 - s0), 0.30 * words.length + 0.08);
       let cum = 0;
       const tw = words.map((o, i) => { const v = ci === 0 && i === 0 ? -0.2 : s0 + speak * cum / nchar; cum += o.w.length + 1; return v; });
       return { s0, s1, div, spans: [...div.children], tw };
@@ -336,6 +338,10 @@
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
     card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
     package: '<path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/>',
+    drone: '<rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9.5 9.5L6.8 6.8M14.5 9.5l2.7-2.7M9.5 14.5l-2.7 2.7M14.5 14.5l2.7 2.7"/><circle cx="5" cy="5" r="2.8"/><circle cx="19" cy="5" r="2.8"/><circle cx="5" cy="19" r="2.8"/><circle cx="19" cy="19" r="2.8"/>',
+    bug: '<rect x="8" y="7" width="8" height="12" rx="4"/><path d="M12 7V5M9.5 5.5L8 4M14.5 5.5L16 4M8 11H4M16 11h4M8 15H4.5M16 15h3.5M8.5 18.5L6 21M15.5 18.5L18 21M12 11v8"/>',
+    phone: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 5h3"/>',
+    download: '<path d="M12 3v12M7 10l5 5 5-5M4 19h16"/>',
   };
   K.icon = (name, { size = 48, sw = 2, color = 'currentColor', cls = '' } = {}) =>
     `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${IC[name] || ''}</svg>`;

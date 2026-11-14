@@ -1,19 +1,22 @@
 ---
 name: interestech7-shorts
-description: Make complete, fact-checked, viral 50–60 s YouTube Shorts for InteresTech7 (cyber, hardware, AI news): topic research, hook+loop script, captions, GSAP/Kokonut-style motion graphics rendered in Chrome, music/SFX, titles, hashtags, TTS voiceover chunks. Use for any Short, Reel, TikTok, 60-second video or tech-news script request.
+description: Make complete, fact-checked, viral 30–60 s YouTube Shorts for InteresTech7 (cyber, hardware, AI news): topic research, hook+loop script, captions, GSAP/Kokonut-style motion graphics rendered in Chrome, music/SFX, a natural AI voiceover mixed in, titles, hashtags. Use for any Short, Reel, TikTok, short video, voiceover or tech-news script request.
 ---
 
 # InteresTech7 Shorts
 
-One request → one finished Short: a fact-checked 50–55 s story with a hook in the first second, captions that pop
-word by word, modern UI motion graphics (Kokonut UI look, GSAP motion), music and sound effects that hit on every beat,
-and a loop so seamless people watch it twice. The reference build is the freezer-hack Short in `examples/freezer/`.
+One request → one finished Short: a fact-checked story with a hook in the first second, a natural voiceover, captions
+that pop word by word in step with the voice, modern UI motion graphics (Kokonut UI look, GSAP motion), music and sound
+effects that hit on every beat, and a loop so seamless people watch it twice. Length: what the user asks for (30 s and
+52 s both built); default 30–55 s. References: `shorts/2026-11-13-drone-update/` (30 s, voiced, vo.py + cues.py) and
+`examples/freezer/` (52 s, no voice).
 
 ## What to deliver
-1. `InteresTech7_<Topic>.mp4` — 1080×1920, 30 fps, 50–55 s, H.264 + AAC, −14.5 LUFS, under 30 MB, seamless loop.
-2. `InteresTech7_<Topic>_VO.mp4` — same picture with the music ~9 dB lower, ready for an AI voiceover on top.
+1. `InteresTech7_<Topic>.mp4` — 1080×1920, 30 fps, H.264 + AAC, −14.5 LUFS, under 30 MB, seamless loop, with the voiceover
+   mixed in (see "Voice" below).
+2. `InteresTech7_<Topic>_NoVoice.mp4` — same picture, no voice, music at −20 LUFS, for re-voicing in CapCut.
 3. In the reply: 3 title options, a description with sources, hashtags, a pinned-comment question.
-4. Voiceover text split into chunks of at most 450 characters, each with its start time (CapCut/Clipchamp TTS stop at ~500).
+4. The voiceover script, in chunks of at most 450 characters (CapCut/Clipchamp TTS stop at ~500).
 
 Work the steps in order and send the video as soon as it passes QA. When the user only wants topics, a script, titles or
 voiceover text, do just that step.
@@ -69,6 +72,11 @@ Beat sheet that worked (freezer Short, 52 s):
 | 45–49 | Viewer stakes | "If it's online, it's a target" |
 | 49–T | Loop line | ends mid-sentence and flows into the hook ("…remember— HACKERS JUST CRANKED…") |
 
+30 s version that worked (drone Short, ~80 words, 7 voice lines): 0–3.4 hook ("Germany's army just grounded its recon
+drones.") · 3.4–5.3 the twist in 4 words ("Because of one update.") · 5.3–12.5 what happened (2 scenes) · 12.5–15.9 the
+detail people get wrong ("Not the drones.") · 15.9–20.7 consequence · 20.7–25.7 now + big picture · 25.7–30 viewer stakes
++ loop line ("…on your phone, remember—").
+
 - One idea per beat and a new visual every 2–4 s.
 - Write the captions as cues: `[start, end, 'TEXT WITH *YELLOW ~BLUE !RED']`, 2–7 words each at ~2.6 words/s.
   Yellow `*` for numbers and key nouns, blue `~` for tech/online words, red `!` for danger words.
@@ -95,7 +103,8 @@ Beat sheet that worked (freezer Short, 52 s):
   - "target" → crosshair reticles locking on
   - backgrounds → dot field always; radial glows recoloured per beat; particles (snow, embers); `kit.bgPaths`
 - Icons: `kit.icon(name, {size, sw})` with snowflake thermometer flame wifi store trash factory fridge database crosshair globe
-  lock unlock alert zap server cpu shield check x terminal cloud calendar bot sparkle cart eye bolt radio power file user card package.
+  lock unlock alert zap server cpu shield check x terminal cloud calendar bot sparkle cart eye bolt radio power file user card package
+  drone bug phone download.
 
 ## 5. Motion language (GSAP)
 - Entrances `expo.out` / `power4.out` 0.4–0.6 s, from y 60–150 or x ±140–240 with `autoAlpha`. Exits `power2.in` 0.22–0.32 s (exits faster than entrances).
@@ -129,18 +138,46 @@ These rules prevent the bugs already hit:
   blur roughly doubled render time in tests.
 - Never cover the key number with a stamp or badge.
 
+## 6b. Voice (natural, mixed in)
+The user heard the offline Flite voice and rejected it ("weird, not natural"). Never ship Flite without asking. Engines, best first:
+1. **Kokoro** (Kokoro-82M, Apache 2.0, CPU via onnxruntime). One-time setup per machine; needs network egress
+   (package managers + GitHub):
+   ```bash
+   pip install kokoro-onnx          # add --break-system-packages if pip refuses
+   mkdir -p ~/kokoro && cd ~/kokoro
+   curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+   curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+   ```
+   Test one line first: `python3 -c "import sys; sys.path.insert(0,'kit'); import sfx; sfx.tts_line('Test.', '/tmp/t.wav', engine='kokoro')"`.
+2. **A file from the user** (CapCut / Clipchamp / ElevenLabs export): `load_voice(path)`; cut it into one file per line
+   (silence gaps) or write the line start times by hand into `vo/timeline.json`.
+3. **Flite** (ffmpeg built-in): only if the user agrees.
+
+No voice picked yet? Run `python3 vo.py --samples` (hook line in 6 voices → `vo/samples/*.mp3`), send them, and let the user
+choose. Record the pick in `claude/shorts-log.md` and reuse it on every Short. Pace for Shorts: speed 1.1–1.2.
+
+Pipeline (copy `vo.py` and `cues.py` from the drone Short):
+- `vo.py`: LINES (one sentence or two per scene) and ANCHORS (each line starts on its scene's beat). Each line is fitted to
+  its slot: Kokoro re-speaks faster (up to 1.4×), then a gentle time-stretch as a last resort. Writes `vo/timeline.json`.
+- `cues.py`: caption chunks per line as (caption text, exactly what is said); it times them from the voice into `cues.js`,
+  which `index.html` loads. Re-run after any voice change, then re-render the video.
+- `audio.py`: `tr.voice(start, load_voice(f'vo/{id}.wav'), gain=1.8)` per line. Music ducks ~9 dB and SFX ~4 dB under the voice;
+  aim for the voice ~10 dB above the music under it. `python3 audio.py --novo` makes the no-voice mix.
+
 ## 7. Preview, render, audio
 ```bash
-python3 kit/capture.py index.html --stills 0,2.5,4.4,7,12,18,24,30,38,44,48,51.7   # writes preview/sheet.jpg
+python3 vo.py && python3 cues.py                            # voice files + captions timed to them
+python3 kit/capture.py index.html --stills 0,2.5,4.4,7,12,18,24,29.6   # writes preview/sheet.jpg
 ```
 Read the sheet. Fix overflow, overlaps, empty moments and anything in the 0–250 or 1400+ zones, then re-render only those stills. Then:
 ```bash
 python3 kit/capture.py index.html --seam                    # want 0.00, and last→first ≈ a normal step
-python3 kit/capture.py index.html --out video_only.mp4      # about 2.5 min for 52 s with 2 workers
+python3 kit/capture.py index.html --out video_only.mp4      # ~1.7 min for 30 s, ~2.5 min for 52 s (2 workers)
 python3 audio.py && python3 kit/master.py mix_raw.wav mix.wav
+python3 audio.py --novo && python3 kit/master.py mix_novo_raw.wav mix_novo.wav -20
 python3 kit/capture.py --mux video_only.mp4 mix.wav InteresTech7_<Topic>.mp4
-python3 kit/master.py mix_raw.wav mix_vo.wav -23.5 && python3 kit/capture.py --mux video_only.mp4 mix_vo.wav InteresTech7_<Topic>_VO.mp4
-python3 kit/capture.py --qa InteresTech7_<Topic>.mp4        # duration, ~20 MB, −14.5 LUFS
+python3 kit/capture.py --mux video_only.mp4 mix_novo.wav InteresTech7_<Topic>_NoVoice.mp4
+python3 kit/capture.py --qa InteresTech7_<Topic>.mp4        # duration, size, −14.5 LUFS
 ```
 `audio.py` follows `examples/freezer/audio.py`: `Track(T).groove(bpm, prog, full, half, build)`, `whooshes(cuts)`, then one sound per
 visual event at the same timestamps as the timeline (booms on impacts, a blip per counted item, typing under terminal text,
@@ -152,11 +189,12 @@ risers into drops, a tape rewind into the loop). Continuous tones go through `tr
 - Description: 2–3 lines, then "Sources:" with links.
 - Hashtags: #Shorts plus 3–4 topical tags (e.g. #CyberSecurity #Hacking #TechNews).
 - Pinned comment: a question that invites replies.
-- Voiceover: turn the cues into sentences (markers removed, normal case). Spell out units and symbols ("122 degrees
-  Fahrenheit"), and keep "…" for pauses. Split at scene starts into chunks of at most 450 characters, each with its start time
-  (3 chunks at 0:00 / 0:21 / 0:39 worked for 52 s). One voice clip per chunk. In CapCut, delete the text box after generating
-  so the burned-in captions aren't doubled. Use the `_VO` file, or lower the music to ~35%. If a chunk runs long, set 1.1× speed.
-- If the Projects tool is available, append to `claude/shorts-log.md`: date, topic, title, length, and what to change next time.
+- Voiceover script: the LINES from `vo.py` joined (spell out units and symbols: "seven billion euro", "122 degrees
+  Fahrenheit"), in chunks of at most 450 characters, for re-voicing in CapCut over the `_NoVoice` file. In CapCut, delete the
+  text box after generating so the burned-in captions aren't doubled.
+- If the Projects tool is available, append to `claude/shorts-log.md`: date, topic, title, length, voice, and what to change next time.
+- Save the Short's source (index.html, audio.py, vo.py, cues.py, cues.js, vo/*.txt, vo/timeline.json; a `kit` symlink to `../../kit`)
+  to `shorts/<date>-<slug>/` in YT-toolkit7 when the user agrees to a push. A new chat can't see this chat's files.
 
 ## Appendix: kit API
 ```
@@ -164,7 +202,8 @@ kit.start({T, fps}, build)               fonts → build → render frame 0 → 
 kit.hookScene(id, dur, (tl, el, dur)=>{}) opening scene on its own paused timeline; fades in again at its first frame over the last 0.65 s
 kit.scene(id, s0, s1, (tl, el, dur)=>{}, {fade, fadeOut:[a,b]})   shown on [s0, s1); tweens use local time
 kit.frame(t=>{}) · kit.text(el, t=>str) · kit.style(el, t=>({...}))     run every frame after the timeline (hookScene runs first)
-kit.captions(cues) · kit.camera(el, {impacts:[[t,s]], kicks:[t], pushes:[[a,b,amt]]}) · kit.flashes(el, [[t,dur,color,peak]])
+kit.captions(cues) cues [[start, end, 'TEXT *Y ~B !R', speakSeconds?]] (speakSeconds: how long the voice takes; from cues.py)
+kit.camera(el, {impacts:[[t,s]], kicks:[t], pushes:[[a,b,amt]]}) · kit.flashes(el, [[t,dur,color,peak]])
 kit.bgDots(el,{gap,drift,alpha}) · kit.bgGlows(el,[{x,y,r,c,ax,ay,k,a}]) → divs (set '--c') · kit.bgParticles(parent,{n,color,size,m,dir,wobble,show:t=>0..1})
 kit.bgPaths(parent,{n,color:'r,g,b',alpha,show}) · kit.grain(el) · kit.split(el,'chars'|'words',{mask}) · kit.flaps(el,text,t0,t1)
 kit.glitch(el,[[a,b]],amt) · kit.scramble(final,p,t) · kit.type(final,p) · kit.num(v,{dec,pre,suf}) · kit.icon(name,{size,sw})
@@ -175,8 +214,9 @@ gsap (motion.js or real): timeline().to/.from/.fromTo/.set/.add/.addLabel/.seek;
 kit.css: .card .glass .gborder .ring-glow(--c) .tile .pill(.hot) .live .island .badge .stamp .toast .icon-tile(--c) .metric .bar>i(--w)
   .term .switch(--on) .flap .kicker .label .title .h1 .mega .grad-text(--accent/--accent2) .shimmer(--shine) .marker(--mk) .glitch .tnum
 capture.py: --stills t,… [--outdir] | --seam | --out f [--workers N --from a --to b] | --mux video audio out | --qa file
-sfx.py: Track(T) .groove .whooshes .fx(t,sig,gain,pan,verb) .typing .drone .save; kick snare clap hat crash boom thud whoosh click_key
+sfx.py: Track(T) .groove .whooshes .fx(t,sig,gain,pan,verb) .typing .drone .voice(t,sig,gain,verb) .save; kick snare clap hat crash boom thud whoosh click_key
   blip bell crackle pluck alarm_beep sizzle news_sting bin_clang flicker_buzz tape_rewind riser glitch_burst ui_pop success error_buzz
+  tts_line(text, path, voice, engine='kokoro'|'flite', speed) · fit_voice(path, max_dur) · load_voice(path) (any audio → 48 kHz mono)
 master.py in.wav out.wav [LUFS, default -14.5]
 ```
 Rebuilding the kit from scratch (only if neither copy is reachable) comes down to one contract. `window.__seek(t)` must render the exact

@@ -1,0 +1,72 @@
+[
+ {
+  "id": "l1",
+  "text": "Germany's army just grounded its recon drones.",
+  "start": 0.08,
+  "dur": 2.668,
+  "slot": 3.28,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l2",
+  "text": "Because of one update.",
+  "start": 3.48,
+  "dur": 1.4,
+  "slot": 1.81,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l3",
+  "text": "Hackers broke into Quantum Systems, a seven billion euro drone maker, and hid malware in a routine software update.",
+  "start": 5.41,
+  "dur": 6.697,
+  "slot": 7.1,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l4",
+  "text": "The fake update reached army servers. Not the drones.",
+  "start": 12.63,
+  "dur": 2.884,
+  "slot": 3.29,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l5",
+  "text": "The army grounded them anyway. They even sat out a military exercise.",
+  "start": 16.04,
+  "dur": 4.213,
+  "slot": 4.62,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l6",
+  "text": "They're flying again now. But one poisoned update can reach every customer at once.",
+  "start": 20.78,
+  "dur": 4.433,
+  "slot": 4.94,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ },
+ {
+  "id": "l7",
+  "text": "So the next time an update pops up on your phone, remember.",
+  "start": 25.84,
+  "dur": 3.457,
+  "slot": 3.46,
+  "engine": "flite",
+  "voice": "slt",
+  "speed": 1.1
+ }
+]

@@ -273,6 +273,77 @@ def error_buzz(d=0.35):
     return fade_edges(sosf(s.astype(np.float32), 'lowpass', 2500))
 
 
+# ------------------------------------------------------------------ voiceover (text-to-speech)
+# Engines, best first:
+#   'kokoro' natural neural voice (Kokoro-82M, Apache 2.0, runs on CPU with onnxruntime). One-time setup, needs network egress:
+#            pip install kokoro-onnx            (add --break-system-packages if pip refuses)
+#            mkdir -p ~/kokoro && cd ~/kokoro
+#            curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+#            curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+#            voices: af_heart af_bella af_nicole af_sarah am_michael am_fenrir am_puck am_adam bm_george bm_lewis bf_emma ...
+#   a file the user made (CapCut / Clipchamp / ElevenLabs export): load_voice(path)
+#   'flite'  ffmpeg's built-in Flite voices: always available offline, but robotic. The user rejected it ("not natural"),
+#            so never ship it without asking.
+VOICE_FX = ('highpass=f=85,lowpass=f=7800,equalizer=f=180:t=q:w=1.0:g=2.5,equalizer=f=2800:t=q:w=1.4:g=3,'
+            'deesser=i=0.4,acompressor=threshold=-20dB:ratio=3.5:attack=4:release=90:makeup=4,'
+            'aexciter=amount=2:drive=7:blend=0:freq=4500:ceil=16000')
+VOICE_FX_NATURAL = ('highpass=f=70,equalizer=f=200:t=q:w=1.0:g=1.5,equalizer=f=3200:t=q:w=1.2:g=2,deesser=i=0.3,'
+                    'acompressor=threshold=-18dB:ratio=2.5:attack=6:release=120:makeup=2.5')
+TRIM = ('silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.02,areverse,'
+        'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04,areverse')
+KOKORO_DIR = __import__('os').environ.get('KOKORO_DIR', __import__('os').path.expanduser('~/kokoro'))
+_KOKORO = None
+
+
+def tts_line(text, path, voice=None, tempo=1.06, pitch=0.97, engine='flite', speed=1.1):
+    """Speak one line into a 48 kHz mono float32 array (also written to `path`), silence trimmed at both ends.
+    engine='kokoro': natural voice; `speed` 1.0–1.35 sets the pace (default voice am_michael).
+    engine='flite':  robotic fallback; `tempo`/`pitch` via rubberband plus an 'AI narrator' EQ (default voice slt)."""
+    import subprocess, tempfile, os
+    if engine == 'kokoro':
+        global _KOKORO
+        from kokoro_onnx import Kokoro
+        if _KOKORO is None:
+            _KOKORO = Kokoro(os.path.join(KOKORO_DIR, 'kokoro-v1.0.onnx'), os.path.join(KOKORO_DIR, 'voices-v1.0.bin'))
+        samples, sr = _KOKORO.create(text, voice=voice or 'am_michael', speed=speed, lang='en-us')
+        raw = path + '.raw.wav'
+        wavfile.write(raw, sr, np.asarray(samples, np.float32))
+        chain = f'{TRIM},aresample=48000:resampler=soxr,{VOICE_FX_NATURAL}'
+        subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-i', raw, '-af', chain,
+                        '-ar', str(SR), '-ac', '1', '-c:a', 'pcm_f32le', path], check=True)
+        os.unlink(raw)
+        return load_voice(path)
+    with tempfile.NamedTemporaryFile('w', suffix='.txt', delete=False) as f:
+        f.write(text)
+        tf = f.name
+    chain = f'{TRIM},aresample=48000:resampler=soxr,rubberband=tempo={tempo}:pitch={pitch},{VOICE_FX}'
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', f'flite=textfile={tf}:voice={voice or "slt"}',
+                    '-af', chain, '-ar', str(SR), '-ac', '1', '-c:a', 'pcm_f32le', path], check=True)
+    os.unlink(tf)
+    return load_voice(path)
+
+
+def fit_voice(path, max_dur):
+    """Time-stretch a voice file in place (pitch kept) so it lasts at most max_dur seconds. Returns the new length."""
+    import subprocess, os
+    d = len(load_voice(path)) / SR
+    if d <= max_dur:
+        return d
+    tmp = path + '.fit.wav'
+    subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-i', path, '-af', f'rubberband=tempo={d / max_dur:.4f}',
+                    '-ar', str(SR), '-ac', '1', '-c:a', 'pcm_f32le', tmp], check=True)
+    os.replace(tmp, path)
+    return len(load_voice(path)) / SR
+
+
+def load_voice(path):
+    """Read any audio file (wav/mp3/m4a) as 48 kHz mono float32 via ffmpeg."""
+    import subprocess
+    raw = subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', str(SR), '-'],
+                         capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.float32).copy()
+
+
 # ------------------------------------------------------------------ track
 class Track:
     def __init__(self, T, tail=4.0):
@@ -281,7 +352,18 @@ class Track:
         self.L = self.N + ns(tail)
         z = lambda: np.zeros((self.L, 2), np.float32)
         self.drums, self.music, self.sfx, self.verb = z(), z(), z(), z()
+        self.vox = z()
         self.kicks = []
+        self.vo_lines = []
+
+    def voice(self, t, sig, gain=1.0, verb=0.06):
+        """place a voiceover line; music and drums duck under it automatically in render()"""
+        pk = float(np.abs(sig).max()) or 1.0
+        sig = sig / pk * 0.9
+        self.place(self.vox, t, sig, gain)
+        if verb:
+            self.place(self.verb, t, sig, gain * verb)
+        self.vo_lines.append((t, len(sig) / SR))
 
     def place(self, buf, t0, sig, gain=1.0, pan=0.0):
         if sig.ndim == 1:
@@ -410,7 +492,27 @@ class Track:
         ir = sosf(ir, 'lowpass', 6000)
         ir /= np.sqrt((ir ** 2).sum(0, keepdims=True))
         wet = np.stack([signal.fftconvolve(self.verb[:, c], ir[:, c])[:self.L] for c in range(2)], 1).astype(np.float32)
-        mix = self.drums + self.music + self.sfx + wet * 0.35
+        bed = self.drums + self.music
+        if self.vo_lines:
+            # sidechain: music/drums dip ~9 dB while the voice talks (fast attack, slow release), SFX dip ~4 dB
+            k = SR // 1000                                     # work on a 1 kHz envelope, then interpolate back
+            n = self.L // k
+            env = np.abs(self.vox[:n * k]).max(1).reshape(n, k).max(1)
+            ref = np.percentile(env[env > 1e-4], 90) if (env > 1e-4).any() else 1.0
+            env = np.clip(env / ref, 0, 1)
+            a, r = np.exp(-1 / 30.0), np.exp(-1 / 350.0)       # 30 ms attack, 350 ms release (in 1 ms steps)
+            sm = np.empty_like(env); y = 0.0
+            for i, x in enumerate(env):
+                y = a * y + (1 - a) * x if x > y else r * y + (1 - r) * x
+                sm[i] = y
+            sm = np.interp(np.arange(self.L) / k, np.arange(n), sm).astype(np.float32)
+            duck_bed = 1 - 0.65 * sm
+            duck_fx = 1 - 0.35 * sm
+            bed = bed * duck_bed[:, None]
+            sfx = self.sfx * duck_fx[:, None]
+            mix = bed + sfx + wet * 0.35 + self.vox * 1.0
+        else:
+            mix = bed + self.sfx + wet * 0.35
         out = mix[:self.N].copy()
         out[:self.L - self.N] += mix[self.N:]          # wrap the tail into the start: seamless loop
         return out
